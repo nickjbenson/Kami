@@ -4,17 +4,24 @@ using System.Collections;
 public class CritterController : MonoBehaviour {
 	
 	public string captureKey;
-	public GameObject whirlwind;
 	private bool captured = false;
 
 	public string soundKey;
 
 	// Update is called once per frame
 	void Update () {
+		if (captured) {
+			float angularSpeed = GetComponentInParent<Kami>().globalTempo;
+			transform.RotateAround(Vector3.zero, Vector3.up, angularSpeed * Time.deltaTime);
+		}
+
 		if (Input.GetKey (captureKey)) {
-			if (captured == false){
-			transform.parent = whirlwind.transform;
-			captured = true;
+			if (captured){
+				captured = false;
+			}
+
+			else {
+				captured = true;
 			}
 		}
 		if (Input.GetKey (soundKey)) {
