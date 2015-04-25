@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: a1fe4d8ad936e4f25bfcca00b8f6fc56
-timeCreated: 1429717390
+guid: 9caba9bcfd596ff4e9c72d2c2e0290f4
+timeCreated: 1429994553
 licenseType: Free
 ModelImporter:
   serializedVersion: 18
@@ -8,16 +8,18 @@ ModelImporter:
     100000: //RootNode
     100002: Icosphere
     100004: Plane
+    100006: Plane_001
     400000: //RootNode
     400002: Icosphere
     400004: Plane
-    2300000: //RootNode
-    2300002: Icosphere
-    2300004: Plane
-    3300000: //RootNode
-    3300002: Icosphere
-    3300004: Plane
-    4300000: Cube
+    400006: Plane_001
+    2300000: Icosphere
+    2300002: Plane
+    2300004: Plane_001
+    3300000: Icosphere
+    3300002: Plane
+    3300004: Plane_001
+    4300000: Plane_001
     4300002: Plane
     4300004: Icosphere
     7400000: Default Take
