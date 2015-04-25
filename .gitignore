@@ -14,6 +14,19 @@
 *.pidb
 *.booproj
 
+# Blender
+*.blend1
+*.blend?.meta
+
+# Wav
+*.wav
+
+# Random thingys
+*.swp
+
+# Python
+*.pyc
+
 # Unity3D generated meta files
 *.pidb.meta
 
