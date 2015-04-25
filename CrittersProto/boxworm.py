@@ -15,7 +15,20 @@ from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics import Color, Ellipse, Line, Rectangle
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 
-import random
+import random as r
+
+# Rhythm patterns
+PATTERN_1 = ("ABABABAC", [("A", 8), ("B", 8), ("C", 8)])
+PATTERNS = [PATTERN_1]
+
+# 16th slot hit probabilities
+HIT_PROB_1 = [0.6, 0.4, 0.5, 0.4, 0.6, 0.4, 0.5, 0.4]*2
+HIT_PROB_2 = []
+HIT_PROBS = [HIT_PROB_1]
+
+# Possible hits
+HITS = [48, 45, 42, 35]
+ALT_HITS = {-1:-1, 48:50, 45:47, 42:-1, 35:36}
 
 # Interaction configuration
 FOCUS_SPEED = 100 # velocity ints / second
@@ -31,13 +44,13 @@ class Boxworm(InstructionGroup, Track):
         self.callback = callback
         self.widget = widget
         self.seed = seed
-        random.seed(seed)
+        r.seed(seed)
 
         # MIDI parameters
         self.synth = synth
-        channel = 10 # perc channel
-        bank = 1
-        preset = 26 # TR-808
+        channel = 10
+        bank = 128
+        preset = 0
         self.cbp = (channel, bank, preset)
         #self.synth.cc(self.channel, 1, 40)
         self.synth.program(*self.cbp)
@@ -59,20 +72,47 @@ class Boxworm(InstructionGroup, Track):
 
         # Physical run-time variables
         self.pos = (700,\
-            random.randint(100, 500))
+            r.randint(100, 500))
         self.vel = ((-1 if self.pos > self.widget.width/2. else 1) * \
-            random.randint(MIN_VEL, MAX_VEL), 0)
+            r.randint(MIN_VEL, MAX_VEL), 0)
 
         # InstructionGroup init (visuals)
-        self.visual_color = Color(random.random(),\
-            random.random(), random.random())
-        self.box_radius = random.randint(50, 100)
+        self.visual_color = Color(r.random(),\
+            r.random(), r.random())
+        self.box_radius = r.randint(20, 50)
         self.visual_box = Rectangle(pos=(self.pos[0]-self.box_radius, self.pos[1]-self.box_radius), size=(self.box_radius*2,self.box_radius*2))
         self.add(self.visual_color)
         self.add(self.visual_box)
 
     def choose_notes(self):
-        notes = [1, 2, 3, 4, 5, 6, 7, 8]
+        notes = []
+
+        pattern = r.choice(PATTERNS)
+        subpat_dict = {}
+        # Generate subpattern dictionary
+        for mapping in pattern[1]:
+            # Generate subpattern
+            new_subpat = []
+            subpat_probs = r.choice(HIT_PROBS)
+            for i in range(mapping[1]):
+                if r.random() < subpat_probs[i]:
+                    new_subpat.append(r.choice(HITS))
+                else:
+                    new_subpat.append(-1)
+            subpat_dict[mapping[0]] = new_subpat
+        # Generate notes based on pattern
+        for char in pattern[0]:
+            notes += subpat_dict[char]
+
+        # Late-pass mutation: Ensure first-note hit
+        notes[0] = r.choice(HITS)
+
+        # Late-pass mutation: Alternate rapid sequence hits
+        cur_hit = -1
+        for i in range(len(notes)):
+            if notes[i] == cur_hit:
+                notes[i] = ALT_HITS[notes[i]]
+            cur_hit = notes[i]
 
         print "Notes: " + str(notes)
         return notes
@@ -183,13 +223,8 @@ class Boxworm(InstructionGroup, Track):
 
     def __str__(self):
         seed = self.seed
-        key = self.key
-        chord = self.chord
-        pattern = self.pattern
-        silence_prob = self.silence_prob_list
-        sustain_prob = self.sustain_prob_list
-        txt = "[Boxworm %s| key:%s, chord:%s, pattern:%s, silence_prob:%s, sustain_prob:%s]\n" % (seed, key, chord, pattern, silence_prob, sustain_prob)
-        txt +="             |> NOTES: %s" % self.notes
+        txt = "[Boxworm %s| ]\n" % (seed)
+        txt +="             |> NOTES: %s\n%s\n%s\n%s" % (self.notes[0:16], self.notes[16:32], self.notes[32:48], self.notes[48:64])
         return txt
 
     def __eq__(self, other):

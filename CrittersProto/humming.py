@@ -150,7 +150,10 @@ class MainWidget(BaseWidget) :
             self.spawn_timer -= kivyClock.frametime
             if self.spawn_timer < 0:
                 self.spawn_timer = self.spawn_time
-                self.spawn_random_boxworm()
+                if random.choice([0, 1]) is 1:
+                    self.spawn_random_boxworm()
+                else:
+                    self.spawn_random_hummingloop()
 
         # Update song scheduler
         self.song.on_update()
