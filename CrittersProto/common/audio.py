@@ -9,12 +9,16 @@
 #####################################################################
 
 import pyaudio
+import wave
 import numpy as np
 import core
+import struct
 
 # remember that output is stereo here
 kSamplingRate = 44100
 kOutputChannels = 2
+kSaveToWave = True
+kWavOutputFilepath = "output.wav" #relative
 
 
 class Audio(object):
@@ -23,6 +27,13 @@ class Audio(object):
 
       self.audio = pyaudio.PyAudio()
       dev_idx = self._find_best_output()
+
+      # write to wave files
+      self.waver = wave.open(kWavOutputFilepath, 'wb')
+      self.waver.setnchannels(kOutputChannels) #kOutputChannels
+      self.waver.setsampwidth(2) # let's convert things into 16 bit integer format
+      self.waver.setframerate(kSamplingRate)
+      self.isRecording = False
 
       self.stream = self.audio.open(format = pyaudio.paFloat32,
                                     channels = kOutputChannels,
@@ -37,10 +48,17 @@ class Audio(object):
       self.listener = listener
       core.register_terminate_func(self.close)
 
+   def start_recording(self):
+      self.isRecording = True
+
+   def stop_recording(self):
+      self.isRecording = False
+
    def close(self) :
       self.stream.stop_stream()
       self.stream.close()
       self.audio.terminate()
+      self.waver.close()
 
    def add_generator(self, gen) :
       if gen not in self.generators: # add this for safety
@@ -57,6 +75,10 @@ class Audio(object):
 
    def get_load(self) :
       return '%.1f%%. %d gens' % (100.0 * self.stream.get_cpu_load(), len(self.generators))
+
+   def write_frames(self, data):
+      fmt = 'h'*len(data)
+      self.waver.writeframes(struct.pack(fmt, *data))
 
    # return the best output index if found. Otherwise, return None
    # (which will choose the default)
@@ -107,6 +129,12 @@ class Audio(object):
       output *= self.gain
       if self.listener:
          self.listener.audio_cb(output)
+
+      if self.isRecording:
+         intoutput = output * np.iinfo(np.int16).max
+         intoutput = intoutput.astype(np.int16)
+         self.write_frames(intoutput)
+         
       return (output.tostring(), pyaudio.paContinue)
 
 

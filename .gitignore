@@ -3,6 +3,15 @@
 [Oo]bj/
 [Bb]uild/
 
+# Python files
+*.pyc
+
+# Soundbank
+*.sf2
+
+# Wav files
+*.wav
+
 # Blender files
 *.blend?
 *.blend?.meta
