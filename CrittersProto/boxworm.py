@@ -19,12 +19,15 @@ import random as r
 
 # Rhythm patterns
 PATTERN_1 = ("ABABABAC", [("A", 8), ("B", 8), ("C", 8)])
-PATTERNS = [PATTERN_1]
+PATTERN_2 = ("AABAABAABAAC", [("A", 4), ("B", 8), ("C", 8)])
+PATTERN_3 = ("ABABABACC", [("A", 8), ("B", 8), ("C", 4)])
+PATTERNS = [PATTERN_1, PATTERN_2, PATTERN_3]
 
 # 16th slot hit probabilities
-HIT_PROB_1 = [0.6, 0.4, 0.5, 0.4, 0.6, 0.4, 0.5, 0.4]*2
-HIT_PROB_2 = []
-HIT_PROBS = [HIT_PROB_1]
+HIT_PROB_1 = [0.6, 0.4, 0.5, 0.4]*4
+HIT_PROB_2 = [0.8, 0.3, 0.7, 0.3]*4
+HIT_PROB_3 = [0.3, 0.8, 0.5, 0.6]*4
+HIT_PROBS = [HIT_PROB_1, HIT_PROB_2, HIT_PROB_3]
 
 # Possible hits
 HITS = [48, 45, 42, 35]
