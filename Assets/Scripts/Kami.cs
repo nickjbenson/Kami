@@ -16,9 +16,12 @@ public class Kami : MonoBehaviour {
 	public string createKey;
 	public Transform hummingloop;
 	private float nextBeat; //time in seconds at which next note should be played
+	public Camera mic;
 
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
+		mic = GameObject.Find ("Mic").GetComponent<Camera>();
+		print (mic);
 	}
 
 	void Update () {
