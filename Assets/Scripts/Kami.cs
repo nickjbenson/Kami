@@ -15,6 +15,7 @@ public class Kami : MonoBehaviour {
 	public float whirlwindHeight;
 	public string createKey;
 	public Transform hummingloop;
+	public Transform boxworm;
 	private float nextBeat; //time in seconds at which next note should be played
 	public Camera mic;
 
@@ -26,18 +27,31 @@ public class Kami : MonoBehaviour {
 
 	void Update () {
 		if (Input.GetKey (createKey)) {
-			Transform type;
-//			int idx = Random.Range(0, num_critters - 1);
-// add more here when we have more types
-			type = hummingloop;
-
-			Vector3 location = new Vector3 (Random.Range (-50, 50), Random.Range (-50, 50), Random.Range (-50, 50));
-			Quaternion rotation = new Quaternion(Random.value, Random.value, Random.value, Random.value);
-
-			Transform t = Instantiate (type, location, rotation) as Transform;
-			GameObject critter = t.gameObject;
-			critter.transform.parent = transform;
+			spawnRandomCritter();
 		}
+	}
+
+	public void spawnRandomCritter() {
+
+		Transform type;
+		Vector3 location;
+		Quaternion rotation;
+
+		if (Random.value < 0.5) {
+			// Spawn Hummingloop
+			type = hummingloop;
+			location = new Vector3 (Random.Range (-50, 50), Random.Range (-50, 50), Random.Range (-50, 50));
+			rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
+		} else {
+			// Spawn Boxworm
+			type = boxworm;
+			location = new Vector3 (0, 0, 60) + Random.onUnitSphere * 5 + Random.insideUnitSphere * 30;
+			rotation = Quaternion.Euler (0, 90, 0);
+		}
+		
+		Transform t = Instantiate (type, location, rotation) as Transform;
+		t.parent = transform;
+
 	}
 
 	public float getNextBeat() {
