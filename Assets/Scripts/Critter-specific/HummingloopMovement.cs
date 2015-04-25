@@ -15,6 +15,18 @@ public class HummingloopMovement : Movement {
 	private Vector3 target;
 
 	void Start () {
+		//find audio file to play
+		int idx = (int) Mathf.Ceil(Random.Range (0, 6));
+		if (idx == 0) {
+			idx = 1;
+		}
+		AudioClip clip = (AudioClip) Resources.Load ("humoutput"+idx);
+		//prefab already has audiosources
+		AudioSource[] sources = GetComponents<AudioSource> ();
+		foreach (AudioSource source in sources) {
+			source.clip = clip;
+		}
+		//movement
 		center = transform.position;
 		newLocation (AudioSettings.dspTime);
 	}

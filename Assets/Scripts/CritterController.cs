@@ -10,7 +10,7 @@ public class CritterController : MonoBehaviour {
 	private int soundIndex = 0;
 
 	void Start() {
-		//TODO: initialize the sounds for each critter
+		//sounds for each critter initialized in their own critter-specific file
 		sounds = GetComponents<AudioSource> ();
 	}
 
@@ -32,7 +32,10 @@ public class CritterController : MonoBehaviour {
 		//sound
 		if (sounds.Length > 0) {
 			playSound ();
+		} else {
+			sounds = GetComponents<AudioSource> (); //this is in case script starts before audio is initialized
 		}
+
 	}
 	
 	void OnMouseEnter(){
