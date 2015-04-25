@@ -49,6 +49,8 @@ class Boxworm(InstructionGroup, Track):
         self.seed = seed
         r.seed(seed)
 
+        self.loopDone = False
+
         # MIDI parameters
         self.synth = synth
         channel = 10
@@ -159,7 +161,13 @@ class Boxworm(InstructionGroup, Track):
         self.cur_idx += self.idx_inc
 
         # keep in bounds:
+        if self.cur_idx >= notes_len:
+            # one cycle is done
+            self.loopDone = True
+
+        # keep in bounds:
         self.cur_idx = self.cur_idx % notes_len
+
 
         return pitch, duration
 
@@ -217,6 +225,9 @@ class Boxworm(InstructionGroup, Track):
         self.pos = (self.pos[0] + self.vel[0] * dt,\
             self.pos[1] + self.vel[1] * dt)
         self.visual_box.pos = (self.pos[0]-self.box_radius, self.pos[1]-self.box_radius)
+
+        if self.loopDone:
+            return True
 
         # Disappear if it moves off screen.
         w = self.widget.width

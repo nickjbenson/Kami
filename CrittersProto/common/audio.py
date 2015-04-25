@@ -17,9 +17,6 @@ import struct
 # remember that output is stereo here
 kSamplingRate = 44100
 kOutputChannels = 2
-kSaveToWave = True
-kWavOutputFilepath = "output.wav" #relative
-
 
 class Audio(object):
    def __init__(self, listener = None):
@@ -29,10 +26,12 @@ class Audio(object):
       dev_idx = self._find_best_output()
 
       # write to wave files
-      self.waver = wave.open(kWavOutputFilepath, 'wb')
-      self.waver.setnchannels(kOutputChannels) #kOutputChannels
-      self.waver.setsampwidth(2) # let's convert things into 16 bit integer format
-      self.waver.setframerate(kSamplingRate)
+      self.waver = None
+
+      # write to a wave file per generator
+      self.wavers = {}
+      self.waverIndex = 1
+      
       self.isRecording = False
 
       self.stream = self.audio.open(format = pyaudio.paFloat32,
@@ -54,18 +53,63 @@ class Audio(object):
    def stop_recording(self):
       self.isRecording = False
 
+   # Set this to write to a global wav file. Else, audio.py
+   # will write to a special wav file for each generator
+   def set_wav_file(self, pathToWav):
+      self.pathToWav = pathToWav
+
+      self.isRecording = False
+
+      if self.waver is not None:
+         self.waver.close()
+         self.waver = None
+
+      self.waver = wave.open(self.pathToWav, 'wb')
+      self.waver.setnchannels(kOutputChannels) #kOutputChannels
+      self.waver.setsampwidth(2) # let's convert things into 16 bit integer format
+      self.waver.setframerate(kSamplingRate)
+      self.isRecording = True
+
+   def get_waver_for_path(self, pathToWav):
+      waver = wave.open(pathToWav, 'wb')
+      waver.setnchannels(kOutputChannels) #kOutputChannels
+      waver.setsampwidth(2) # let's convert things into 16 bit integer format
+      waver.setframerate(kSamplingRate)
+      return waver
+
+   def get_new_waver(self):
+      self.waverIndex += 1
+      print "NEWWW"
+      print self.waverIndex
+      return self.get_waver_for_path("wav/output" + str(self.waverIndex - 1) + ".wav")
+
+   def write_frames(self, data):
+      self.write_frames_to_waver(data, self.waver)
+
+   def write_frames_to_waver(self, data, waver):
+      if waver is None:
+         print "No wav file..."
+         return
+      fmt = 'h'*len(data)
+      waver.writeframes(struct.pack(fmt, *data))
+
    def close(self) :
       self.stream.stop_stream()
       self.stream.close()
       self.audio.terminate()
-      self.waver.close()
+      if self.waver is not None:
+         self.waver.close()
 
    def add_generator(self, gen) :
       if gen not in self.generators: # add this for safety
          self.generators.append(gen)
 
    def remove_generator(self, gen) :
-      self.generators.remove(gen)
+      if gen in self.generators:
+         self.generators.remove(gen)
+         awav = self.wavers[gen]
+         awav.close()
+         del self.wavers[gen]
 
    def set_gain(self, gain) :
       self.gain = np.clip(gain, 0, 1)
@@ -76,9 +120,6 @@ class Audio(object):
    def get_load(self) :
       return '%.1f%%. %d gens' % (100.0 * self.stream.get_cpu_load(), len(self.generators))
 
-   def write_frames(self, data):
-      fmt = 'h'*len(data)
-      self.waver.writeframes(struct.pack(fmt, *data))
 
    # return the best output index if found. Otherwise, return None
    # (which will choose the default)
@@ -117,6 +158,19 @@ class Audio(object):
       kill_list = []
       for g in self.generators:
          (signal, keep_going) = g.generate(num_frames)
+         #signal *= self.gain
+
+         # if self.waver is None:
+         #    # write each generator to its own wave file
+         #    if g not in self.wavers:
+         #       awav = self.get_new_waver()
+         #       self.wavers[g] = awav
+         #    else:
+         #       awav = self.wavers[g]
+         #    intoutput = signal * np.iinfo(np.int16).max
+         #    intoutput = signal.astype(np.int16)
+         #    self.write_frames_to_waver(signal, awav)
+
          # works if returned signal is shorter than output as well.
          output[:len(signal)] += signal
          if not keep_going:
@@ -130,7 +184,7 @@ class Audio(object):
       if self.listener:
          self.listener.audio_cb(output)
 
-      if self.isRecording:
+      if self.isRecording and self.waver is not None:
          intoutput = output * np.iinfo(np.int16).max
          intoutput = intoutput.astype(np.int16)
          self.write_frames(intoutput)

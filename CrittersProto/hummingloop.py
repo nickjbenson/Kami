@@ -140,6 +140,9 @@ class Hummingloop(InstructionGroup, Track):
         self.add(self.circle_color)
         self.add(self.circle)
 
+        # Loop tracker
+        self.loopDone = False
+
     def choose_notes(self):
         notes_init = [self.key + self.chord[x]\
             for x in range(len(self.chord))]
@@ -227,6 +230,10 @@ class Hummingloop(InstructionGroup, Track):
         self.cur_idx += self.idx_inc
 
         # keep in bounds:
+        if self.cur_idx >= notes_len:
+            # one cycle is done
+            self.loopDone = True
+
         self.cur_idx = self.cur_idx % notes_len
 
         return pitch, duration
@@ -288,6 +295,9 @@ class Hummingloop(InstructionGroup, Track):
         self.pos = (self.pos[0] + self.vel[0] * dt,\
             self.pos[1] + self.vel[1] * dt)
         move_ellipse(self.circle, self.circle_radius, self.pos)
+
+        if self.loopDone:
+            return True
 
         # Disappear if it moves off screen.
         w = self.widget.width
