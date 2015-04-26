@@ -69,7 +69,7 @@ public class CritterController : MonoBehaviour {
 	}
 
 	public bool shouldMove() {
-		return !captured&!focused;
+		return true;
 	}
 
 	public void enterWhirlwind() {
