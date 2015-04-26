@@ -30,6 +30,12 @@ public class Kami : MonoBehaviour {
 	// No-go radius around player (for critters)
 	public float noGoRad = 2;
 
+	// Focused transform (critter)
+	private Transform focus = null;
+
+	// Oculus Reticle
+	public OculusReticle reticle;
+
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
 	}
@@ -38,6 +44,18 @@ public class Kami : MonoBehaviour {
 		if (Input.GetKey (createKey)) {
 			spawnRandomCritter();
 		}
+		
+		// Update focus based on reticle
+		Transform reticleTarget = reticle.Target;
+		if (reticleTarget != null) {
+			Hummingloop possibleCritter = reticleTarget.GetComponentInParent<Hummingloop> ();
+			if (possibleCritter != null) {
+				this.focus = possibleCritter.transform;
+			}
+		} else {
+			this.focus = null;
+		}
+		print (this.focus);
 	}
 
 	public void spawnRandomCritter() {
@@ -81,6 +99,13 @@ public class Kami : MonoBehaviour {
 			rPos = Random.insideUnitSphere * hummingMoveRad; // try again
 		}
 		return rPos;
+	}
+
+	public int getFocusState(Transform critter) {
+		if (focus == null) {
+			return 0;
+		} else
+			return (focus == critter) ? 1 : -1;
 	}
 	
 }

@@ -3,22 +3,34 @@ using System.Collections;
 
 public class Hummingloop : MonoBehaviour {
 
+	// OBJECT HOOKS
 	public Kami kami;
 	public Transform leftWing;
 	public Transform rightWing;
+
+	// MOVEMENT VARIABLES
 	public float speed = 0.1f; // Movement speed towards target
 	public float rotSpeed = 0.1f; // Rotation speed towards target
-	public int survivalTime = 24;
-	public int beatsToLoop = 4;
-
 	private Vector3 target; // target destination
 	private bool refreshTarget = true; // whether we should get a new target
-	private double nextBeatTime;
 	private bool leaving = false; // whether or not the hummingloop is leaving
+
+	// BEAT TRACKING / LOOPING VARIABLES
+	public int survivalTime = 24;
+	public int beatsToLoop = 4;
+	private double nextBeatTime;
 	private double prevBeat = 0.0; //time at which previous note was played
 	AudioSource[] sources;
 	private int soundIndex = 0;
 	private int beatsSinceLastPlay = 0;
+
+	// FOCUS VARIABLES
+	public float focusSpeed = 0.5f;
+	public int focusState = 0; // -1 = unfocus, 0 = default, 1 = focus
+	private float targetVolume = 1.0f;
+	private float target3DBlend = 1.0f;
+	private float actualVolume = 1.0f;
+	private float actualBlend = 1.0f;
 
 	// Use this for initialization
 	void Start () {
@@ -36,12 +48,29 @@ public class Hummingloop : MonoBehaviour {
 			source.clip = clip;
 			print (source.clip);
 		}
-		// Finally, start playing immediately:
-		beatsSinceLastPlay = beatsToLoop;
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		// **********************
+		// BEAT-COUNTING BEHAVIOR
+		// **********************
+
+		// Get a new target every beat
+		if (nextBeatTime <= AudioSettings.dspTime) {
+			nextBeatTime = kami.getNextBeat();
+			beatsSinceLastPlay += 1;
+			
+			if (!leaving) // Only refresh target if not leaving
+				refreshTarget = true;
+			
+			survivalTime -= 1;
+		}
+
+		// *****************
+		// MOVEMENT BEHAVIOR
+		// *****************
 
 		if (!leaving) {
 			// Get new target if necessary
@@ -49,17 +78,6 @@ public class Hummingloop : MonoBehaviour {
 				target = kami.getRandomTarget ("hummingloop");
 				refreshTarget = false;
 			}
-		}
-
-		// Get a new target every beat
-		if (nextBeatTime <= AudioSettings.dspTime) {
-			nextBeatTime = kami.getNextBeat();
-			beatsSinceLastPlay += 1;
-
-			if (!leaving) // Only refresh target if not leaving
-				refreshTarget = true;
-			
-			survivalTime -= 1;
 		}
 
 		// Smoothly rotate to target
@@ -83,6 +101,34 @@ public class Hummingloop : MonoBehaviour {
 		if (survivalTime <= -18) {
 			Destroy (this.gameObject);
 			print ("Bye for real.");
+		}
+
+		// *****************
+		// FOCUSING BEHAVIOR
+		// *****************
+
+		// Determine focus state. -1 is unfocused, 0 is default, 1 is focused
+		focusState = kami.getFocusState(this.transform);
+
+		if (focusState < 0) {
+			targetVolume = 0.1f;
+			target3DBlend = 1f; // fully 3D
+		} else if (focusState == 0) {
+			targetVolume = 1f;
+			target3DBlend = 1f; // fully 3D
+		} else {
+			targetVolume = 1f;
+			target3DBlend = 0f; // fully 2D (ignore spatial volume dropoff)
+		}
+
+		// Lerp volume and 3D blend.
+		actualVolume = Mathf.Lerp (actualVolume, targetVolume, focusSpeed);
+		actualBlend = Mathf.Lerp (actualBlend, target3DBlend, focusSpeed);
+
+		// Actually set volume and blend.
+		foreach (AudioSource source in sources) {
+			source.volume = actualVolume;
+			source.spatialBlend = actualBlend;
 		}
 
 		// Finally, play beautiful sounds!
