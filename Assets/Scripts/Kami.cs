@@ -24,8 +24,13 @@ public class Kami : MonoBehaviour {
 
 	private float nextBeat; //time in seconds at which next note should be played
 
-	// Hummingloop movement radius
+	// Hummingloop spawn/movement radius
 	public float hummingMoveRad = 30;
+
+	// Boxworm spawn distance
+	public Vector3 boxwormSpawnDist = new Vector3(0, 0, 30);
+	// Boxworm spawn radius
+	public float boxwormSpawnRad = 30;
 
 	// No-go radius around player (for critters)
 	public float noGoRad = 2;
@@ -48,14 +53,14 @@ public class Kami : MonoBehaviour {
 		// Update focus based on reticle
 		Transform reticleTarget = reticle.Target;
 		if (reticleTarget != null) {
-			Hummingloop possibleCritter = reticleTarget.GetComponentInParent<Hummingloop> ();
+			Critter possibleCritter = reticleTarget.GetComponentInParent<Critter> ();
 			if (possibleCritter != null) {
 				this.focus = possibleCritter.transform;
 			}
 		} else {
 			this.focus = null;
 		}
-		print (this.focus);
+		print ("Focus: " + this.focus);
 	}
 
 	public void spawnRandomCritter() {
@@ -65,19 +70,20 @@ public class Kami : MonoBehaviour {
 		Quaternion rotation;
 		Transform t;
 
-		if (Random.value < 1.0) {
+		if (Random.value < 0.5) {
 			// Spawn Hummingloop
 			type = hummingloop;
 			location = getRandomTarget ("hummingloop");
 			rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
 			t = Instantiate (type, location, rotation) as Transform;
-			t.GetComponent<Hummingloop>().kami = this;
+			t.GetComponent<Critter>().kami = this;
 		} else {
 			// Spawn Boxworm
 			type = boxworm;
-			location = new Vector3 (0, 0, 60) + Random.onUnitSphere * 5 + Random.insideUnitSphere * 30;
+			location = getRandomTarget ("boxworm");
 			rotation = Quaternion.Euler (0, 90, 0);
 			t = Instantiate (type, location, rotation) as Transform;
+			t.GetComponent<Critter>().kami = this;
 		}
 
 		t.parent = transform;
@@ -94,11 +100,20 @@ public class Kami : MonoBehaviour {
 	/// <returns>A (somewhat) random target for the critter to head towards.</returns>
 	/// <param name="critterType">Critter type.</param>
 	public Vector3 getRandomTarget(string critterType) {
-		Vector3 rPos = Random.insideUnitSphere * hummingMoveRad;
-		while (rPos.sqrMagnitude < noGoRad * noGoRad) {
-			rPos = Random.insideUnitSphere * hummingMoveRad; // try again
+		if (critterType == "hummingloop") {
+			Vector3 rPos = Random.insideUnitSphere * hummingMoveRad;
+			while (rPos.sqrMagnitude < noGoRad * noGoRad) {
+				rPos = Random.insideUnitSphere * hummingMoveRad; // try again
+			}
+			return rPos;
+		} else {
+			// boxworm
+			Vector3 rPos = Random.insideUnitSphere * boxwormSpawnRad;
+			while (rPos.sqrMagnitude < noGoRad * noGoRad) {
+				rPos = Random.insideUnitSphere * hummingMoveRad; // try again
+			}
+			return boxwormSpawnDist + rPos;
 		}
-		return rPos;
 	}
 
 	public int getFocusState(Transform critter) {
