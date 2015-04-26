@@ -22,7 +22,6 @@ public class Kami : MonoBehaviour {
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
 		mic = GameObject.Find ("Mic").GetComponent<Camera>();
-		print (mic);
 	}
 
 	void Update () {

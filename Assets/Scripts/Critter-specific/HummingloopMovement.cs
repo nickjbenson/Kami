@@ -14,7 +14,12 @@ public class HummingloopMovement : Movement {
 	private Vector3 origin;
 	private Vector3 target;
 
+	//the time at which critter should start to leave
+	private float killTime; 
+
 	void Start () {
+		killTime = (float) AudioSettings.dspTime + 20 * GetComponentInParent<Kami> ().globalTempo;
+
 		//find audio file to play
 		int idx = (int) Mathf.Ceil(Random.Range (0, 6));
 		if (idx == 0) {
@@ -39,14 +44,23 @@ public class HummingloopMovement : Movement {
 			origin = center;
 			target = center;
 		}
+
+		// death
+		if (shouldDie ()) {
+			Destroy (this.gameObject);
+		}
 	}
 
 	void move() {
-		//move in horizontal tangent to player
-		Vector3 inwardRadius = -transform.position;
-		Vector3 tangent = Vector3.Cross (inwardRadius, Vector3.up);
-		center += tangent * speed * Time.deltaTime;
-//		transform.position = center;
+		if (AudioSettings.dspTime > killTime) {
+			center.y += 5 * Time.deltaTime;
+		} else {
+			//move in horizontal tangent to player
+			Vector3 inwardRadius = -transform.position;
+			Vector3 tangent = Vector3.Cross (inwardRadius, Vector3.up);
+			center += tangent * speed * Time.deltaTime;
+//			transform.position = center;
+		}
 		twitch ();
 	}
 
@@ -66,9 +80,6 @@ public class HummingloopMovement : Movement {
 		if (dt >= switchTime) {
 			newLocation (now);
 		}
-
-		//also, the center moves, regularly
-
 	}
 
 	void newLocation(double now) {
@@ -77,5 +88,9 @@ public class HummingloopMovement : Movement {
 		target = center + disp;
 		prev = now;
 //		transform.position = center + target;
+	}
+
+	bool shouldDie(){
+		return (transform.position.y >= 90.0);
 	}
 }

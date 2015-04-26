@@ -17,7 +17,7 @@ public class Movement : MonoBehaviour {
 
 		// death
 		if (shouldDie ()) {
-			Destroy (this);
+			Destroy (this.gameObject);
 		}
 	}
 
