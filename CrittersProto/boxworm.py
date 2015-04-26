@@ -49,8 +49,6 @@ class Boxworm(InstructionGroup, Track):
         self.seed = seed
         r.seed(seed)
 
-        self.loopDone = False
-
         # MIDI parameters
         self.synth = synth
         channel = 10
@@ -88,6 +86,15 @@ class Boxworm(InstructionGroup, Track):
         self.visual_box = Rectangle(pos=(self.pos[0]-self.box_radius, self.pos[1]-self.box_radius), size=(self.box_radius*2,self.box_radius*2))
         self.add(self.visual_color)
         self.add(self.visual_box)
+
+        # Loop tracker
+        self.numLoops = 0
+        self.loopOnce = False
+
+
+    # Whether this boxworm should terminate itself after a single loop
+    def set_loop_once(self, loopOnce):
+        self.loopOnce = loopOnce
 
     def choose_notes(self):
         notes = []
@@ -149,6 +156,14 @@ class Boxworm(InstructionGroup, Track):
 
         notes_len = len(self.notes)
 
+
+        # keep in bounds:
+        if self.cur_idx >= notes_len - 1:
+            # one cycle is already done. (do this here
+            # because we'd rather cut into the next loop than clip this loop)
+            self.numLoops += 1
+
+
         # Zeroes in the sequence mark sustains.
         duration = 1
         for i in range(self.cur_idx+1, notes_len):
@@ -159,12 +174,6 @@ class Boxworm(InstructionGroup, Track):
 
         # advance index
         self.cur_idx += self.idx_inc
-
-        # keep in bounds:
-        if self.cur_idx >= notes_len:
-            # one cycle is done
-            self.loopDone = True
-
         # keep in bounds:
         self.cur_idx = self.cur_idx % notes_len
 
@@ -173,6 +182,9 @@ class Boxworm(InstructionGroup, Track):
 
     def _noteon(self, tick, ignore):
         pitch, note_duration = self._get_next_pitch()
+        if self.loopOnce and self.numLoops > 0:
+            # We're already done. tHe last note has most likely finished. Ignore this _noteon call.
+            return
 
         if pitch not in [0, -1]:
             # play note on:
@@ -185,7 +197,7 @@ class Boxworm(InstructionGroup, Track):
 
         # callback:
         if self.callback:
-            self.callback(tick, pitch, velocity, duration)
+            self.callback(tick, pitch, self.note_velocity, note_duration)
 
         # post next note. quantize tick to line up with grid of current note length
         if (self.playing):
@@ -226,7 +238,8 @@ class Boxworm(InstructionGroup, Track):
             self.pos[1] + self.vel[1] * dt)
         self.visual_box.pos = (self.pos[0]-self.box_radius, self.pos[1]-self.box_radius)
 
-        if self.loopDone:
+        # a delayed needs removal
+        if self.loopOnce and self.numLoops > 0:
             return True
 
         # Disappear if it moves off screen.

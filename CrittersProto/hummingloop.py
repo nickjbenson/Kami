@@ -141,7 +141,12 @@ class Hummingloop(InstructionGroup, Track):
         self.add(self.circle)
 
         # Loop tracker
-        self.loopDone = False
+        self.numLoops = 0
+        self.loopOnce = False
+
+    # Whether this hummingloop should terminate itself after a single loop
+    def set_loop_once(self, loopOnce):
+        self.loopOnce = loopOnce
 
     def choose_notes(self):
         notes_init = [self.key + self.chord[x]\
@@ -215,8 +220,13 @@ class Hummingloop(InstructionGroup, Track):
 
     def _get_next_pitch(self):
         pitch = self.notes[self.cur_idx]
-
         notes_len = len(self.notes)
+
+        # keep in bounds:
+        if self.cur_idx >= notes_len - 1:
+            # one cycle is already done. (do this here
+            # because we'd rather cut into the next loop than clip this loop)
+            self.numLoops += 1
 
         # Zeroes in the sequence mark sustains.
         duration = 1
@@ -225,15 +235,9 @@ class Hummingloop(InstructionGroup, Track):
                 duration += 1
             else:
                 break
-
         # advance index
         self.cur_idx += self.idx_inc
-
-        # keep in bounds:
-        if self.cur_idx >= notes_len:
-            # one cycle is done
-            self.loopDone = True
-
+        # loop (may be prevented by loopOnce)
         self.cur_idx = self.cur_idx % notes_len
 
         return pitch, duration
@@ -243,6 +247,9 @@ class Hummingloop(InstructionGroup, Track):
 
     def _noteon(self, tick, ignore):
         pitch, note_duration = self._get_next_pitch()
+        if self.loopOnce and self.numLoops > 0:
+            # We're already done. Ignore this _noteon call.
+            return
 
         if pitch not in [0, -1]:
             # play note on:
@@ -255,7 +262,7 @@ class Hummingloop(InstructionGroup, Track):
 
         # callback:
         if self.callback:
-            self.callback(tick, pitch, velocity, duration)
+            self.callback(tick, pitch, self.note_velocity, note_duration)
 
         # post next note. quantize tick to line up with grid of current note length
         if (self.playing):
@@ -296,7 +303,8 @@ class Hummingloop(InstructionGroup, Track):
             self.pos[1] + self.vel[1] * dt)
         move_ellipse(self.circle, self.circle_radius, self.pos)
 
-        if self.loopDone:
+        # a delayed needs removal
+        if self.loopOnce and self.numLoops > 0:
             return True
 
         # Disappear if it moves off screen.

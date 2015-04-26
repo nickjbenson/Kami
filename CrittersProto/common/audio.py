@@ -58,6 +58,7 @@ class Audio(object):
    def set_wav_file(self, pathToWav):
       self.pathToWav = pathToWav
 
+      wasRecording = self.isRecording
       self.isRecording = False
 
       if self.waver is not None:
@@ -68,7 +69,7 @@ class Audio(object):
       self.waver.setnchannels(kOutputChannels) #kOutputChannels
       self.waver.setsampwidth(2) # let's convert things into 16 bit integer format
       self.waver.setframerate(kSamplingRate)
-      self.isRecording = True
+      self.isRecording = wasRecording
 
    def get_waver_for_path(self, pathToWav):
       waver = wave.open(pathToWav, 'wb')

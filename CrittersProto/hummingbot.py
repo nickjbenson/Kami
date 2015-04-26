@@ -24,7 +24,7 @@ class MainWidget(BaseWidget) :
     def __init__(self):
         super(MainWidget, self).__init__()
 
-        self.currentSeed = 1
+        self.currentSeed = 0
 
         # Tracking the critters
         self.critters = []
@@ -38,16 +38,19 @@ class MainWidget(BaseWidget) :
 
         # well, here's a test
         #self.synths = {}
+        self.nextHummingTick = 0 # -1 if doesn't need one
+        #self.audio.start_recording()
 
 
     def spawn_random_hummingloop(self, seed=-1):
         if seed is -1:
             seed = random.randint(1, 100000)
-        self.spawn_hummingloop(seed, self.synth, 0, 0, 69)
+        self.spawn_hummingloop(seed, self.synth, 0, 0, 69) #69
 
     def spawn_hummingloop(self, seed, synth, channel, bank, preset):
         critter = Hummingloop(self, seed,\
-            synth, channel, bank, preset)
+            synth, channel, bank, preset, callback=self.critter_did_noteon)
+        critter.set_loop_once(True)
         self.song.add_track(critter)
         self.canvas.add(critter)
         self.critters.append(critter)
@@ -62,7 +65,8 @@ class MainWidget(BaseWidget) :
         #self.synths[seed] = aNewSynth
 
     def spawn_boxworm(self, seed, synth):
-        critter = Boxworm(self, seed, synth)
+        critter = Boxworm(self, seed, synth, callback=self.critter_did_noteon)
+        critter.set_loop_once(True)
         self.song.add_track(critter)
         self.canvas.add(critter)
         self.critters.append(critter)
@@ -75,18 +79,37 @@ class MainWidget(BaseWidget) :
         self.song.stop()
 
     def on_key_down(self, keycode, modifiers):
-       if keycode[1] is 'k':
-            self.audio.start_recording()
-            self.generate_next_humming()
+        if keycode[1] is 'k':
+            #self.audio.start_recording()
+            self.generate_next_boxworm()
+
+    def critter_did_noteon(self, tick, pitch, velocity, duration):
+        # start recording only on first "note_on" 
+        # (which includes silent beats)
+        self.audio.start_recording()
             
     def generate_next_boxworm(self):
-        self.audio.set_wav_file("wav/humoutput" + str(self.currentSeed) + ".wav")
-        self.spawn_random_boxworm(seed=self.currentSeed)
+        self.audio.stop_recording()
+        self.audio.set_wav_file("wav/box_output" + str(self.currentSeed) + ".wav")
+        if self.currentSeed < 1:
+            # TODOVV HACK HACK HACK the first output is missycnrhonized
+            # so generate it twice
+            self.spawn_random_boxworm(seed=1)
+        else:
+            self.spawn_random_boxworm(seed=self.currentSeed)
+        #self.audio.start_recording()
         self.currentSeed += 1
 
     def generate_next_humming(self):
-        self.audio.set_wav_file("wav/humoutput" + str(self.currentSeed) + ".wav")
-        self.spawn_random_hummingloop(seed=self.currentSeed)
+        self.audio.stop_recording()
+        self.audio.set_wav_file("wav/hum_output" + str(self.currentSeed) + ".wav")
+        if self.currentSeed < 1:
+            # TODOVV HACK HACK HACK the first output is missycnrhonized
+            # so generate it twice
+            self.spawn_random_hummingloop(seed=1)
+        else:
+            self.spawn_random_hummingloop(seed=self.currentSeed)
+        #self.audio.start_recording()
         self.currentSeed += 1
 
     def on_key_up(self, keycode):
@@ -96,7 +119,6 @@ class MainWidget(BaseWidget) :
         return 1
 
     def on_update(self):
-       
         # Update song scheduler
         self.song.on_update()
 
@@ -106,7 +128,15 @@ class MainWidget(BaseWidget) :
             # Updating critters
             if critter.on_update(kivyClock.frametime):
                 kill_list += [critter]
-                self.generate_next_humming()
+                # stop all recordings until the next one
+                self.audio.stop_recording()
+                self.nextHummingTick = self.song.cond.get_tick() + 1000
+
+        if self.nextHummingTick > 0 and self.song.cond.get_tick() > self.nextHummingTick:
+            # create the next humming loop, (the dealy in creation is to deal with potential lag and what not)
+            # is probably not necessary, but let's test it out.
+            self.nextHummingTick = -1
+            self.generate_next_boxworm()
 
         # Kill loops
         for loop in kill_list:
