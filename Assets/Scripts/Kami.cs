@@ -24,8 +24,6 @@ public class Kami : MonoBehaviour {
 
 	private float nextBeat; //time in seconds at which next note should be played
 
-	public Camera mic; // The camera used as an audiolistener
-
 	// Hummingloop movement radius
 	public float hummingMoveRad = 30;
 
@@ -34,7 +32,6 @@ public class Kami : MonoBehaviour {
 
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
-		mic = GameObject.Find ("Mic").GetComponent<Camera>();
 	}
 
 	void Update () {
@@ -48,20 +45,23 @@ public class Kami : MonoBehaviour {
 		Transform type;
 		Vector3 location;
 		Quaternion rotation;
+		Transform t;
 
-		if (Random.value < 0.5) {
+		if (Random.value < 1.0) {
 			// Spawn Hummingloop
 			type = hummingloop;
-			location = new Vector3 (Random.Range (-50, 50), Random.Range (-50, 50), Random.Range (-50, 50));
+			location = getRandomTarget ("hummingloop");
 			rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
+			t = Instantiate (type, location, rotation) as Transform;
+			t.GetComponent<Hummingloop>().kami = this;
 		} else {
 			// Spawn Boxworm
 			type = boxworm;
 			location = new Vector3 (0, 0, 60) + Random.onUnitSphere * 5 + Random.insideUnitSphere * 30;
 			rotation = Quaternion.Euler (0, 90, 0);
+			t = Instantiate (type, location, rotation) as Transform;
 		}
-		
-		Transform t = Instantiate (type, location, rotation) as Transform;
+
 		t.parent = transform;
 
 	}

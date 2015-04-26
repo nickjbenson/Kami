@@ -48,7 +48,7 @@ public class CritterController : MonoBehaviour {
 	//note: when focused, all other sound turns off completely (this can be configured)
 	public void focus(){
 		if (!captured) {
-			focused = GetComponentInParent<Kami> ().mic.GetComponent<MicController>().focusOn (transform);
+			//focused = GetComponentInParent<Kami> ().mic.GetComponent<MicController>().focusOn (transform);
 			AudioListener.volume = 0.0f;
 			foreach (AudioSource sound in sounds){
 				sound.ignoreListenerVolume = true;
@@ -56,7 +56,7 @@ public class CritterController : MonoBehaviour {
 		}
 	}
 	public void defocus(){
-		GetComponentInParent<Kami> ().mic.GetComponent<MicController>().defocus ();
+		//GetComponentInParent<Kami> ().mic.GetComponent<MicController>().defocus ();
 		focused = false;
 		AudioListener.volume = 1.0f;
 		foreach (AudioSource sound in sounds){

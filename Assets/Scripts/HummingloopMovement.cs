@@ -31,6 +31,7 @@ public class HummingloopMovement : Movement {
 		foreach (AudioSource source in sources) {
 			source.clip = clip;
 		}
+
 		//movement
 		center = transform.position;
 		newLocation (AudioSettings.dspTime);
