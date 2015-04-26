@@ -7,17 +7,30 @@ using System.Collections;
 /// Critters get globalTempo and globalKey from Kami.
 /// When critter is captured, it gets whirlwindSpeed and whirlwindRadius from Kami.
 public class Kami : MonoBehaviour {
-	
+
+	// Global music configuration
 	public float globalTempo; //number of seconds until next beat
 	public int globalKey;
+
+	// "Captured" whirlwind
 	public float whirlwindRadius;
 	public float whirlwindSpeed;
 	public float whirlwindHeight;
-	public string createKey;
-	public Transform hummingloop;
-	public Transform boxworm;
+
+	public string createKey; // Key to press to spawn things at random
+
+	public Transform hummingloop; // hummingloop prefab
+	public Transform boxworm; // boxworm prefab
+
 	private float nextBeat; //time in seconds at which next note should be played
-	public Camera mic;
+
+	public Camera mic; // The camera used as an audiolistener
+
+	// Hummingloop movement radius
+	public float hummingMoveRad = 30;
+
+	// No-go radius around player (for critters)
+	public float noGoRad = 2;
 
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
@@ -58,6 +71,16 @@ public class Kami : MonoBehaviour {
 			nextBeat += globalTempo;
 		}
 		return nextBeat;
+	}
+
+	/// <returns>A (somewhat) random target for the critter to head towards.</returns>
+	/// <param name="critterType">Critter type.</param>
+	public Vector3 getRandomTarget(string critterType) {
+		Vector3 rPos = Random.insideUnitSphere * hummingMoveRad;
+		while (rPos.sqrMagnitude < noGoRad * noGoRad) {
+			rPos = Random.insideUnitSphere * hummingMoveRad; // try again
+		}
+		return rPos;
 	}
 	
 }
