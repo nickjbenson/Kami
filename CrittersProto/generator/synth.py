@@ -30,3 +30,5 @@ class Synth(fluidsynth.Synth):
       samples = self.get_samples(num_frames).astype(np.float32) 
       samples *= (1.0/32768.0)
       return (samples, True)
+
+
