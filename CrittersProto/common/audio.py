@@ -185,6 +185,7 @@ class Audio(object):
       if self.listener:
          self.listener.audio_cb(output)
 
+      # don't stop recording in the middle of a generation
       if self.isRecording and self.waver is not None:
          intoutput = output * np.iinfo(np.int16).max
          intoutput = intoutput.astype(np.int16)

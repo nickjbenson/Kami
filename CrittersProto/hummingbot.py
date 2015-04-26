@@ -81,7 +81,7 @@ class MainWidget(BaseWidget) :
     def on_key_down(self, keycode, modifiers):
         if keycode[1] is 'k':
             #self.audio.start_recording()
-            self.generate_next_boxworm()
+            self.generate_next_humming()
 
     def critter_did_noteon(self, tick, pitch, velocity, duration):
         # start recording only on first "note_on" 
@@ -129,14 +129,13 @@ class MainWidget(BaseWidget) :
             if critter.on_update(kivyClock.frametime):
                 kill_list += [critter]
                 # stop all recordings until the next one
-                self.audio.stop_recording()
-                self.nextHummingTick = self.song.cond.get_tick() + 1000
+                self.nextHummingTick = self.song.cond.get_tick() + 200
 
         if self.nextHummingTick > 0 and self.song.cond.get_tick() > self.nextHummingTick:
-            # create the next humming loop, (the dealy in creation is to deal with potential lag and what not)
+            # create the next humming loop, taking into account the envelope
             # is probably not necessary, but let's test it out.
             self.nextHummingTick = -1
-            self.generate_next_boxworm()
+            self.generate_next_humming()
 
         # Kill loops
         for loop in kill_list:
