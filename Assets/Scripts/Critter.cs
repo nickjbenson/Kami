@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class Critter : MonoBehaviour {
+public class Critter : MonoBehaviour {
 
 	// OBJECT HOOKS
 	public Kami kami;
@@ -11,26 +11,28 @@ public abstract class Critter : MonoBehaviour {
 	private bool captured = false;
 
 	// CAPTURE FUNCTIONS / PROPERTIES
-	public abstract void OnStartCapture ();
+	public virtual void OnStartCapture () { }
 	public void BeginCapturing() {
 		if (!captured) {
 			beingCaptured = true;
 			OnStartCapture ();
 		}
 	}
-	public abstract void OnStopCapture();
+	public virtual void OnStopCapture() { }
 	public void StopCapturing() {
 		if (!captured && beingCaptured) {
 			beingCaptured = false;
 			OnStopCapture ();
 		}
 	}
+	public virtual void OnRelease() { }
 	public void Release() {
 		if (!captured && beingCaptured)
 			StopCapturing ();
 		else {
 			print ("You released a critter you had captured!");
 			kami.DeregisterCapture(this);
+			OnRelease ();
 		}
 		beingCaptured = false;
 		captured = false;

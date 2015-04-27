@@ -33,6 +33,9 @@ public class Boxworm : Critter {
 	private float actualVolume = 1.0f;
 	private float actualBlend = 1.0f;
 
+	// CAPTURE VARIABLES
+	private Vector3 captureTargetV = Vector3.zero;
+
 	// Use this for initialization
 	void Start () {
 		nextBeatTime = kami.getNextBeat ();
@@ -55,16 +58,30 @@ public class Boxworm : Critter {
 	// we just need to do some additional target logic so the
 	// hummingloop knows where to go when it's being "captured."
 	public override void OnStartCapture() {
-		print ("lolol box capture not implemented");
+		captureTargetV = kami.transform.position;
 	}
 	
 	// As above.
 	public override void OnStopCapture() {
-		print ("uh okay box stop capture called");
+		captureTargetV = Vector3.zero;
+	}
+
+	// On release, set turnaround time to be artificially low
+	// so that the boxworm moves away from the player
+	// before turning around. (Only applies if the boxworm
+	// isn't already leaving, which is very likely.)
+	public override void OnRelease() {
+		beatsSinceTurnAround = -beatsToTurnAround;
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		// *********************
+		// INFORMATION GATHERING
+		// *********************
+		
+		float distanceToKami = Vector3.Distance (transform.position, kami.transform.position);
 
 		// **********************
 		// BEAT-COUNTING BEHAVIOR
@@ -74,39 +91,75 @@ public class Boxworm : Critter {
 		if (nextBeatTime <= AudioSettings.dspTime) {
 			nextBeatTime = kami.getNextBeat();
 			beatsSinceLastPlay += 1;
+
 			beatsSinceTurnAround += 1;
+			if (BeingCaptured) {
+				// Basically, capturing moves the center
+				// of the boxworm's movement pattern (which
+				// normally is back-and-forth)
+				beatsSinceTurnAround = beatsToTurnAround/2;
+			}
+
 			survivalTime -= 1;
+
+			if (Captured && survivalTime < 0) {
+				// Leave on release, but survive for a while
+				survivalTime = 0;
+			}
+		}
+
+		// *****************
+		// CAPTURE BEHAVIOR
+		// *****************
+		
+		if (distanceToKami <= kami.captureMaxRad && !Captured && BeingCaptured) {
+			FinalizeCapture();
 		}
 
 		// *****************
 		// MOVEMENT BEHAVIOR
 		// *****************
 
-		// Move forward at speed
-		transform.position += transform.forward * speed;
-		
-		// If too close to player, just turn around
-		if (Vector3.Distance (transform.position, kami.transform.position) <= kami.noGoRad) {
-			beatsSinceTurnAround = beatsToTurnAround;
-		}
+		if (BeingCaptured) {
+			// If a boxworm is being captured,
+			// just move (without changing facing) towards the player
 
-		// Turn around every X beats, only if not leaving
-		if (beatsSinceTurnAround >= beatsToTurnAround && !leaving) {
-			// Turn around
-			Vector3 eulerA = transform.rotation.eulerAngles;
-			transform.rotation = Quaternion.Euler (eulerA.x, eulerA.y+180, eulerA.z);
-			// Reset tracker
-			beatsSinceTurnAround = 0;
-		}
-		
-		// After a certain number of beats, set leaving
-		if (survivalTime <= 0 && !leaving) {
-			leaving = true;
-		}
-		
-		// After even more beats, just disappear
-		if (survivalTime <= -18) {
-			Destroy (this.gameObject);
+			transform.position += (captureTargetV - transform.position).normalized * speed;
+
+		} else {
+			// If not being captured, move back and forth.
+			// Movement while not captured and movement while captured
+			// is basically the same, except captured boxworms don't care
+			// how close to the player they get.
+			
+			// Move forward at speed
+			transform.position += transform.forward * speed;
+			
+			// If too close to player, turn around
+			if (Vector3.Distance (transform.position, kami.transform.position) <= kami.noGoRad
+			    && !BeingCaptured && !Captured) {
+				beatsSinceTurnAround = beatsToTurnAround;
+			}
+			
+			// Turn around every X beats, only if not leaving
+			if (beatsSinceTurnAround >= beatsToTurnAround && (!leaving || Captured)) {
+				// Turn around
+				Vector3 eulerA = transform.rotation.eulerAngles;
+				transform.rotation = Quaternion.Euler (eulerA.x, eulerA.y+180, eulerA.z);
+				// Reset tracker
+				beatsSinceTurnAround = 0;
+			}
+			
+			// After a certain number of beats, set leaving
+			if (survivalTime <= 0 && !leaving) {
+				leaving = true;
+			}
+			
+			// After even more beats, just disappear
+			if (survivalTime <= -18) {
+				Destroy (this.gameObject);
+			}
+
 		}
 	
 		// *****************
