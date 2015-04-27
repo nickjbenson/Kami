@@ -8,6 +8,7 @@
 # and generates wave files for them
 
 import hummingloop
+import boxworm
 import wave
 import numpy as np
 import struct
@@ -21,13 +22,15 @@ kOutputChannels = 2
 
 for currentSeed in xrange(1, 31):
     # set up wave file writing
-    waver = wave.open("wav/hum_output" + str(currentSeed) + ".wav", 'wb')
+    waver = wave.open("wav/box_output" + str(currentSeed) + ".wav", 'wb')
     waver.setnchannels(kOutputChannels) #kOutputChannels
     waver.setsampwidth(2) # let's convert things into 16 bit integer format
     waver.setframerate(kSamplingRate)
 
-    newHL = hummingloop.HummingLoop(currentSeed)
-    newFrames = newHL.get_frames()
+    # newHL = hummingloop.HummingLoop(currentSeed)
+    # newFrames = newHL.get_frames()
+    newBW = boxworm.BoxWorm(currentSeed)
+    newFrames = newBW.get_frames()
     data = newFrames * np.iinfo(np.int16).max
     data = data.astype(np.int16)
     fmt = 'h'*len(data)
