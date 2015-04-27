@@ -17,7 +17,9 @@ public class Kami : MonoBehaviour {
 	public float whirlwindSpeed;
 	public float whirlwindHeight;
 
-	public string createKey; // Key to press to spawn things at random
+	public string createKey = "q"; // Key to press to spawn things at random
+	public string captureKey = "c"; // Key for capturing critters (also used to dismiss)
+	public string focusKey = "f"; // Key for focusing on the target critter
 
 	public Transform hummingloop; // hummingloop prefab
 	public Transform boxworm; // boxworm prefab
@@ -36,18 +38,103 @@ public class Kami : MonoBehaviour {
 	public float noGoRad = 2;
 
 	// Focused transform (critter)
-	private Transform focus = null;
+	private Critter focus = null;
+	private bool focusActive = false;
 
 	// Oculus Reticle
 	public OculusReticle reticle;
 
+	// Capturing (new system)
+	public float captureMinRad = 4f;
+	public float captureMaxRad = 7f;
+	private Critter[] capturedCritters;
+	private int captureIdx = 0;
+	public int maxCapturedCritters = 6;
+
+	// Releasing manually (new system)
+	public float releaseCommandTime = 3f;
+	private float releaseTimer = 0;
+	private bool releaseTimerEnabled = false;
+	private Critter releaseTimerCritter = null;
+	private bool captureKeyNotHeldSinceRelease = true;
+
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
+
+		capturedCritters = new Critter[maxCapturedCritters];
+	}
+
+	void BeginRelease() {
+		releaseTimerCritter = focus;
+		releaseTimerEnabled = true;
+		releaseTimer = releaseCommandTime;
+		captureKeyNotHeldSinceRelease = false;
+	}
+
+	void FinishRelease(bool successful) {
+		if (successful) {
+			releaseTimerCritter.Release ();
+			print ("Release successful.");
+		}
+		releaseTimerEnabled = false;
+		releaseTimer = 0;
+		releaseTimerCritter = null;
 	}
 
 	void Update () {
 		if (Input.GetKey (createKey)) {
-			spawnRandomCritter();
+			spawnRandomCritter ();
+		}
+
+		if (Input.GetKey (captureKey)) {
+			if (focus != null) {
+				if (!focus.Captured && captureKeyNotHeldSinceRelease) {
+					// Start capturing!
+					focus.BeginCapturing ();
+				}
+				else if (!releaseTimerEnabled) {
+					// Start the release timer
+					// and set relevant release variables.
+					BeginRelease();
+				}
+			}
+		} else { // capture key not pressed
+			captureKeyNotHeldSinceRelease = true;
+			if (focus != null && focus.BeingCaptured) {
+				// Cancel capturing.
+				focus.StopCapturing();
+			}
+			// Reset the release timer if need be
+			if (releaseTimerEnabled) {
+				// failed release attempt
+				FinishRelease(false);
+			}
+		}
+
+
+
+		if (Input.GetKey (focusKey)) {
+			focusActive = true;
+		} else {
+			focusActive = false;
+		}
+
+		// Releasing: Hold C on a captured critter.
+		// If you hold it longer than the release time
+		// set publically (a few seconds), the critter
+		// will be released.
+		if (releaseTimer > 0 && releaseTimerEnabled) {
+			releaseTimer -= Time.deltaTime;
+			// Make sure the player kept the focus on
+			// the desired critter the whole time.
+			if (releaseTimerCritter != focus) {
+				// failed release attempt
+				FinishRelease(false);
+			}
+		}
+		if (releaseTimer < 0 && releaseTimerEnabled) {
+			// successful release
+			FinishRelease (true);
 		}
 		
 		// Update focus based on reticle
@@ -55,12 +142,12 @@ public class Kami : MonoBehaviour {
 		if (reticleTarget != null) {
 			Critter possibleCritter = reticleTarget.GetComponentInParent<Critter> ();
 			if (possibleCritter != null) {
-				this.focus = possibleCritter.transform;
+				focus = possibleCritter;
 			}
 		} else {
-			this.focus = null;
+			focus = null;
 		}
-		print ("Focus: " + this.focus);
+		print ("Focus: " + focus);
 	}
 
 	public void spawnRandomCritter() {
@@ -116,11 +203,38 @@ public class Kami : MonoBehaviour {
 		}
 	}
 
-	public int getFocusState(Transform critter) {
+	public Vector3 getCaptureSpaceTarget(string critterType) {
+		if (critterType == "hummingloop") {
+			return Random.onUnitSphere * Random.Range(captureMinRad, captureMaxRad);
+		} else {
+			print ("unsupported critter type: " + critterType);
+			return Vector3.zero;
+		}
+	}
+	
+	/// <summary>
+	/// Used by critters to ask whether or not they
+	/// (or something else) is in focus.
+	/// </summary>
+	public int getFocusState(Critter critter) {
 		if (focus == null) {
 			return 0;
 		} else
 			return (focus == critter) ? 1 : -1;
+	}
+
+	public void RegisterCapture(Critter critter) {
+		if (capturedCritters [captureIdx] != null) {
+			capturedCritters[captureIdx].Release ();
+		}
+		capturedCritters [captureIdx] = critter;
+		captureIdx += 1;
+		captureIdx %= maxCapturedCritters;
+		print ("Registered a critter.");
+	}
+
+	public void DeregisterCapture(Critter critter) {
+
 	}
 	
 }

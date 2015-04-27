@@ -42,15 +42,25 @@ public class Boxworm : Critter {
 		int idx = (int) Mathf.Ceil(Random.Range (3, 29));
 		// Load audio clip
 		AudioClip clip = (AudioClip)Resources.Load ("Audio/box_output" + idx);
-		print ("Loaded " + clip);
 		// Get AudioSource components (already in Prefab)
 		sources = GetComponents<AudioSource> ();
 		foreach (AudioSource source in sources) {
 			source.clip = clip;
-			print (source.clip);
 		}
 		// Start looping on the next available beat
 		beatsSinceLastPlay = beatsToLoop - 1;
+	}
+
+	// Critter handles most of the logistics of capture. Here
+	// we just need to do some additional target logic so the
+	// hummingloop knows where to go when it's being "captured."
+	public override void OnStartCapture() {
+		print ("lolol box capture not implemented");
+	}
+	
+	// As above.
+	public override void OnStopCapture() {
+		print ("uh okay box stop capture called");
 	}
 	
 	// Update is called once per frame
@@ -74,6 +84,11 @@ public class Boxworm : Critter {
 
 		// Move forward at speed
 		transform.position += transform.forward * speed;
+		
+		// If too close to player, just turn around
+		if (Vector3.Distance (transform.position, kami.transform.position) <= kami.noGoRad) {
+			beatsSinceTurnAround = beatsToTurnAround;
+		}
 
 		// Turn around every X beats, only if not leaving
 		if (beatsSinceTurnAround >= beatsToTurnAround && !leaving) {
@@ -99,7 +114,7 @@ public class Boxworm : Critter {
 		// *****************
 		
 		// Determine focus state. -1 is unfocused, 0 is default, 1 is focused
-		focusState = kami.getFocusState(this.transform);
+		focusState = kami.getFocusState(this);
 		
 		if (focusState < 0) {
 			targetVolume = 0.1f;

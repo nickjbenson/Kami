@@ -30,6 +30,9 @@ public class Hummingloop : Critter {
 	private float actualVolume = 1.0f;
 	private float actualBlend = 1.0f;
 
+	// CAPTURE VARIABLES
+	private Vector3 targetBeforeCapture;
+
 	// Use this for initialization
 	void Start () {
 		nextBeatTime = kami.getNextBeat ();
@@ -43,14 +46,35 @@ public class Hummingloop : Critter {
 		sources = GetComponents<AudioSource> ();
 		foreach (AudioSource source in sources) {
 			source.clip = clip;
-			print (source.clip);
 		}
 		// Start looping on the next available beat
 		beatsSinceLastPlay = beatsToLoop - 1;
 	}
+
+	// Critter handles most of the logistics of capture. Here
+	// we just need to do some additional target logic so the
+	// hummingloop knows where to go when it's being "captured."
+	public override void OnStartCapture() {
+		targetBeforeCapture = target;
+		target = kami.transform.position;
+		if (survivalTime < 0)
+			// Reset survival clock because capture indicates player interest
+			survivalTime = 0;
+	}
+
+	// As above.
+	public override void OnStopCapture() {
+		target = targetBeforeCapture;
+	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		// *********************
+		// INFORMATION GATHERING
+		// *********************
+
+		float distanceToKami = Vector3.Distance (transform.position, kami.transform.position);
 
 		// **********************
 		// BEAT-COUNTING BEHAVIOR
@@ -60,52 +84,92 @@ public class Hummingloop : Critter {
 		if (nextBeatTime <= AudioSettings.dspTime) {
 			nextBeatTime = kami.getNextBeat();
 			beatsSinceLastPlay += 1;
-			
-			if (!leaving) // Only refresh target if not leaving
+
+			// target-refresh behavior only applies if
+			// the hummingloop is not leaving, or if
+			// it's currently captured
+			if (!leaving || Captured) 
 				refreshTarget = true;
-			
+
 			survivalTime -= 1;
+
+			if (Captured) {
+				// Leave on release, but survive for a while
+				survivalTime = 0;
+			}
+		}
+
+		// *****************
+		// CAPTURE BEHAVIOR
+		// *****************
+
+		if (distanceToKami <= kami.captureMaxRad && !Captured && BeingCaptured) {
+			FinalizeCapture();
 		}
 
 		// *****************
 		// MOVEMENT BEHAVIOR
 		// *****************
 
-		if (!leaving) {
-			// Get new target if necessary
+		if (Captured) {
+			// Movement logic while captured.
+
+			// Get a new target inside the capture shell
+			// if refreshTarget was set to true (every few beats or so)
 			if (refreshTarget) {
-				target = kami.getRandomTarget ("hummingloop");
+				target = kami.getCaptureSpaceTarget("hummingloop");
 				refreshTarget = false;
 			}
-		}
 
+			// If too close to player, move away
+			if (distanceToKami <= kami.captureMinRad/2f) {
+				target = (transform.position - kami.transform.position) + transform.position;
+			}
+
+		} else {
+			// Movement logic while not captured.
+
+			// While not leaving but uncaptured, get new target
+			// if refreshTarget was set to true (every few beats or so)
+			if (!leaving) {
+				if (refreshTarget && !BeingCaptured) {
+					target = kami.getRandomTarget ("hummingloop");
+					refreshTarget = false;
+				}
+			}
+			
+			// If too close to player, move away
+			if (distanceToKami <= kami.noGoRad && !BeingCaptured) {
+				target = (transform.position - kami.transform.position) + transform.position;
+			}
+			
+			// After a certain number of beats, set leaving
+			if (survivalTime <= 0 && !leaving) {
+				leaving = true;
+				// Get a target far away
+				target = Random.onUnitSphere * 200;
+			}
+			
+			// After even more beats, just disappear
+			if (survivalTime <= -18) {
+				Destroy (this.gameObject);
+			}
+		}
+		
 		// Smoothly rotate to target
 		// Slerp to facing
 		transform.rotation = Quaternion.Slerp(transform.rotation,
 		                                      Quaternion.LookRotation (target - transform.position),
 		                                      rotSpeed);
-
 		// Move forward at speed
 		transform.position += transform.forward * speed;
-
-		// After a certain number of beats, set leaving
-		if (survivalTime <= 0 && !leaving) {
-			leaving = true;
-			// Get a target far away
-			target = Random.onUnitSphere * 200;
-		}
-
-		// After even more beats, just disappear
-		if (survivalTime <= -18) {
-			Destroy (this.gameObject);
-		}
 
 		// *****************
 		// FOCUSING BEHAVIOR
 		// *****************
 
 		// Determine focus state. -1 is unfocused, 0 is default, 1 is focused
-		focusState = kami.getFocusState(this.transform);
+		focusState = kami.getFocusState(this);
 
 		if (focusState < 0) {
 			targetVolume = 0.1f;
