@@ -25,8 +25,8 @@ public class CritterController : MonoBehaviour {
 
 	void Update () {
 		if (captured) {
-			float angularSpeed = GetComponentInParent<Kami> ().whirlwindSpeed;
-			transform.RotateAround (Vector3.zero, Vector3.up, angularSpeed * Time.deltaTime);
+			//float angularSpeed = GetComponentInParent<Kami> ().whirlwindSpeed;
+			//transform.RotateAround (Vector3.zero, Vector3.up, angularSpeed * Time.deltaTime);
 		}
 
 		//sound
@@ -76,12 +76,12 @@ public class CritterController : MonoBehaviour {
 		if (!captured) {
 			captured = true;
 			///scale position to radius of whirlwind
-			float radius = GetComponentInParent<Kami> ().whirlwindRadius;
-			float height = GetComponentInParent<Kami> ().whirlwindHeight;
-			if (height == 0){height = 1;}
-			Vector3 newPosition = transform.position.normalized * radius;
-			newPosition.y = Random.Range(2, 2+height);
-			transform.position = newPosition;
+			//loat radius = GetComponentInParent<Kami> ().whirlwindRadius;
+			//float height = GetComponentInParent<Kami> ().whirlwindHeight;
+			//if (height == 0){height = 1;}
+			//Vector3 newPosition = transform.position.normalized * radius;
+			//newPosition.y = Random.Range(2, 2+height);
+			//transform.position = newPosition;
 		}
 	}
 

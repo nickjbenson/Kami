@@ -12,11 +12,6 @@ public class Kami : MonoBehaviour {
 	public float globalTempo; //number of seconds until next beat
 	public int globalKey;
 
-	// "Captured" whirlwind
-	public float whirlwindRadius;
-	public float whirlwindSpeed;
-	public float whirlwindHeight;
-
 	public string createKey = "q"; // Key to press to spawn things at random
 	public string captureKey = "c"; // Key for capturing critters (also used to dismiss)
 	public string focusKey = "f"; // Key for focusing on the target critter
@@ -58,6 +53,11 @@ public class Kami : MonoBehaviour {
 	private Critter releaseTimerCritter = null;
 	private bool captureKeyNotHeldSinceRelease = true;
 
+	// Leap Control
+	public LeapControl leapControl;
+	public bool leapCapture = false;
+	public bool leapFocus = false;
+
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
 
@@ -82,11 +82,30 @@ public class Kami : MonoBehaviour {
 	}
 
 	void Update () {
+
+		// Leap Motion checks
+		if (leapControl.ForceMagnitude <= -0.5) {
+			// Hand (palm) mostly facing towards the reticle (target object)
+			// interpreted as focus.
+			leapFocus = true;
+			leapCapture = false;
+		} else if (leapControl.ForceMagnitude >= 0.5) {
+			// Hand (palm) mostly facing away from the reticle (target object)
+			// interpreted as capture + focus.
+			leapFocus = true;
+			leapCapture = true;
+		} else {
+			leapFocus = false;
+			leapCapture = false;
+		}
+
+		print ("ForceMagnitude: " + leapControl.ForceMagnitude);
+
 		if (Input.GetKey (createKey)) {
 			spawnRandomCritter ();
 		}
 
-		if (Input.GetKey (captureKey)) {
+		if (Input.GetKey (captureKey) || leapCapture) {
 			if (focus != null) {
 				if (!focus.Captured && captureKeyNotHeldSinceRelease) {
 					// Start capturing!
@@ -111,11 +130,12 @@ public class Kami : MonoBehaviour {
 			}
 		}
 
-
-
-		if (Input.GetKey (focusKey)) {
+		// Focus
+		if (Input.GetKey (focusKey) || leapFocus) {
+			// Start focusing.
 			focusActive = true;
 		} else {
+			// Cancel focusing.
 			focusActive = false;
 		}
 
@@ -217,7 +237,7 @@ public class Kami : MonoBehaviour {
 	/// (or something else) is in focus.
 	/// </summary>
 	public int getFocusState(Critter critter) {
-		if (focus == null) {
+		if (!focusActive || focus == null) {
 			return 0;
 		} else
 			return (focus == critter) ? 1 : -1;
