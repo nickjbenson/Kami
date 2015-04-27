@@ -30,7 +30,7 @@ class HummingLoop(object):
         chord = random.choice(CHORDS)
         self.notes = choose_notes(key, chord)
 
-        self.note_velocity = 60 * NOTE_VELOCITY_MULT
+        self.note_velocity = 60 * 2 * NOTE_VELOCITY_MULT
 
         self.synth = Synth('../FluidR3_GM.sf2')
         self.channel = 0
@@ -50,6 +50,7 @@ class HummingLoop(object):
         stopGeneration = False
         pendingOffticks = []
         deltaTicks = 0
+        envelope_final_frames = 1000 # leave some frames for the note_off envelope
 
         while stopGeneration is not True:
             if self.cur_idx < len(self.notes) and currentTick % kTicksPerBeat == 0:
@@ -60,10 +61,8 @@ class HummingLoop(object):
             if len(pendingOffticks) > 0:
                 if pendingOffticks[0][0] <= currentTick:
                     (offTick, pitch) = pendingOffticks.pop(0)
-                    print "off"
                     self._noteoff(offTick, pitch)
             new_frames, good = self.synth.generate(deltaTicks * kFramesPerTick)
-            print self.cur_idx
             data_frames = np.append(data_frames, new_frames)
 
             # get the next beat!
@@ -78,6 +77,9 @@ class HummingLoop(object):
 
             # check if we're done
             if self.cur_idx >= len(self.notes) and len(pendingOffticks) < 1:
+                # generate final frames for envelope
+                new_frames, good = self.synth.generate(envelope_final_frames)
+                data_frames = np.append(data_frames, new_frames)
                 stopGeneration = True
 
         return data_frames
