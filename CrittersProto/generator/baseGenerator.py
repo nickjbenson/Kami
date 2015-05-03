@@ -1,6 +1,6 @@
 #####################################################################
 #
-# hummingloop.py
+# BaseGenerator.py
 #
 # Copyright (c) 2015, Nick Benson
 # Modifications by benchan
