@@ -68,11 +68,12 @@ def choose_notes(key, chord):
         for value in values:
             if value > max_val:
                 max_val = value
-        return [x/float(max_val) for x in values]
+        normalization_const = float(max_val)
+        return [x/normalization_const for x in values], normalization_const
 
     def generate_random_oscillation_configuration(base_freq):
         config = []
-        for i in range(1, 16, 1):
+        for i in range(1, 17, 1):
             freq = base_freq * i * random.choice([-1, 1])
             amp = random.random() * (1./i)
             config.append((freq, amp))
@@ -90,7 +91,7 @@ def choose_notes(key, chord):
     for x in range(int(round(8 / base_freq))):
         osc_values.append(osciline(x, config=osc_config))
 
-    norm_osc_values = normalize(osc_values)
+    norm_osc_values, normalization_const = normalize(osc_values)
     print "center: %s" % (str(osc_ctr))
     print "offset: %s" % (str(osc_offset))
     print "amplit: %s" % (str(osc_amp))
@@ -110,4 +111,8 @@ def choose_notes(key, chord):
             last_note = notes[i]
 
     print notes
-    return notes
+    print "Generated %s 1/16th notes" % (len(notes))
+    print "At 120 bpm, this should be a file %s seconds long, ignoring note releases." % (len(notes)/4)
+    return notes, osc_config, normalization_const
+
+choose_notes(C, PENTA)
