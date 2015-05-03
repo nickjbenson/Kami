@@ -2,7 +2,7 @@
 using System.Collections;
 
 //Like a buffer fish, blows air in and out (with the tempo).
-public class Puffer : Critter {
+public class Mine : Critter {
 
 	float tempo; //time per beat
 

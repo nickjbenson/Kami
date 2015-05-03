@@ -11,7 +11,7 @@ import sys
 sys.path.append('../prototype/common')
 import hummingloop
 import boxworm
-import puffer
+import mine
 import oscilloop
 import wave
 import numpy as np
@@ -32,8 +32,8 @@ newFrames = newBW.get_frames()
 # newFrames = newHL.get_frames()
 # newOS = oscilloop.Oscilloop(10)
 # newFrames = newOS.get_frames()
-# newPF = puffer.Puffer(currentSeed)
-# newFrames = newPF.get_frames()
+# newMN = mine.Mine(currentSeed)
+# newFrames = newMN.get_frames()
 
 # Follows code to play things out loud
 # =================================================

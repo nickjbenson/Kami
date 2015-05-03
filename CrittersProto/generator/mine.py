@@ -42,7 +42,7 @@ PROG_8 = [VIII, IV, V, I]
 # Master progressions list
 PROGRESSIONS = [PROG_1, PROG_2, PROG_3, PROG_4, PROG_5, PROG_6, PROG_7, PROG_8]
 
-class Puffer(object):
+class Mine(object):
     def __init__(self, idx):
         idx = (idx-1)%len(PROGRESSIONS)
 
