@@ -18,6 +18,7 @@ import random
 
 from hummingloop import *
 from boxworm import *
+from oscilloop import *
 
 class MainWidget(BaseWidget) :
     def __init__(self):
@@ -25,7 +26,7 @@ class MainWidget(BaseWidget) :
 
         # Audio initialization
         self.audio = Audio()
-        self.synth = Synth('./FluidR3_GM.sf2')
+        self.synth = Synth('../FluidR3_GM.sf2')
         self.audio.add_generator(self.synth)
         self.song = Song()
         self.song.cond.set_bpm(120)
@@ -93,6 +94,18 @@ class MainWidget(BaseWidget) :
         self.canvas.add(critter)
         self.critters.append(critter)
         self.song.start()
+        
+    def spawn_random_critter(self, seed=-1):
+        if seed is -1:
+            seed = random.randint(1, 100000)
+        self.spawn_oscilloop(seed, self.synth)
+
+    def spawn_oscilloop(self, seed, synth):
+        critter = Oscilloop(self, seed, synth)
+        self.song.add_track(critter)
+        self.canvas.add(critter)
+        self.critters.append(critter)
+        self.song.start()
 
     def remove_critter_audio(self, critter_track):
         self.song.remove_track(critter_track)
@@ -107,9 +120,9 @@ class MainWidget(BaseWidget) :
 
         elif keycode[1] is 'enter':
             if self.state is "INPUT_NUMBER":
-                # Create boxworm and start playing.
+                # Create critter and start playing.
                 number = self.prompt.text[16:]
-                self.spawn_random_boxworm(seed=number)
+                self.spawn_random_critter(seed=number)
                 self.prompt.text = "Input a number: "
             else:
                 # Stop playing and go back.

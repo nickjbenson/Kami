@@ -39,7 +39,6 @@ class HummingLoop(object):
 
         self.cur_idx = 0
 
-
     def get_frames(self):
         # Actual script
         # frames
