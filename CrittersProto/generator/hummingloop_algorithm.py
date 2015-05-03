@@ -11,62 +11,6 @@
 
 import random
 
-def choose_notes(key, chord):
-    notes_init = [key + chord[x]\
-        for x in range(len(chord))]
-
-    notes_span = notes_init + [note + 12 for note in notes_init]
-
-    # Generate notes
-    notes = []
-    subpat_dict = {}
-    pattern = random.choice(PATTERNS)
-    silence_prob_list = random.choice(SILENCE_PROB_LISTS)
-    for subpat in pattern:
-        if subpat[0] not in subpat_dict:
-            # Generate new subpattern
-            new_subpat = []
-            for i in range(subpat[1]):
-                new_subpat += [random.choice(notes_span)]
-                # Silence
-                if random.choice(silence_prob_list) is 1:
-                    new_subpat[-1] = -1
-            subpat_dict[subpat[0]] = new_subpat
-        # Add each subpattern's notes according to pattern
-        notes += subpat_dict[subpat[0]]
-
-    # Sustain processing of notes.
-    # Add potential sustains instead of silences
-    # (0 instead of -1)
-    sustain_possible = False
-    sustain_prob_list = random.choice(SUSTAIN_PROB_LISTS)
-    for i in range(len(notes)):
-        if notes[i] is not -1:
-            # A note can be sustained.
-            sustain_possible = True
-        if notes[i] is -1 and sustain_possible:
-            if random.choice(sustain_prob_list) is 1:
-                notes[i] = 0 if i < len(notes)-1 else -1
-            else:
-                # A note-off event will happen,
-                # sustain is no longer possible
-                sustain_possible = False
-
-    # Octave-jump-removal processing.
-    # Removes jumps of larger than an octave in the middle
-    # of a melody. Should help create more
-    # melodic structures.
-    last_note = -1
-    for i in range(len(notes)):
-        cur_note = notes[i]
-        if last_note - cur_note > 12 and last_note is not -1:
-            notes[i] += 12
-        elif last_note - cur_note < -12 and last_note is not -1:
-            notes[i] -= 12
-
-    print "Notes: " + str(notes)
-    return notes
-
 # MIDI values
 C = 60
 
@@ -134,3 +78,59 @@ FOCUS_SPEED = 100 # velocity ints / second
 MAX_VEL = 50
 MIN_VEL = 50
 NOTE_VELOCITY_MULT = 0.5
+
+def choose_notes(key, chord):
+    notes_init = [key + chord[x]\
+        for x in range(len(chord))]
+
+    notes_span = notes_init + [note + 12 for note in notes_init]
+
+    # Generate notes
+    notes = []
+    subpat_dict = {}
+    pattern = random.choice(PATTERNS)
+    silence_prob_list = random.choice(SILENCE_PROB_LISTS)
+    for subpat in pattern:
+        if subpat[0] not in subpat_dict:
+            # Generate new subpattern
+            new_subpat = []
+            for i in range(subpat[1]):
+                new_subpat += [random.choice(notes_span)]
+                # Silence
+                if random.choice(silence_prob_list) is 1:
+                    new_subpat[-1] = -1
+            subpat_dict[subpat[0]] = new_subpat
+        # Add each subpattern's notes according to pattern
+        notes += subpat_dict[subpat[0]]
+
+    # Sustain processing of notes.
+    # Add potential sustains instead of silences
+    # (0 instead of -1)
+    sustain_possible = False
+    sustain_prob_list = random.choice(SUSTAIN_PROB_LISTS)
+    for i in range(len(notes)):
+        if notes[i] is not -1:
+            # A note can be sustained.
+            sustain_possible = True
+        if notes[i] is -1 and sustain_possible:
+            if random.choice(sustain_prob_list) is 1:
+                notes[i] = 0 if i < len(notes)-1 else -1
+            else:
+                # A note-off event will happen,
+                # sustain is no longer possible
+                sustain_possible = False
+
+    # Octave-jump-removal processing.
+    # Removes jumps of larger than an octave in the middle
+    # of a melody. Should help create more
+    # melodic structures.
+    last_note = -1
+    for i in range(len(notes)):
+        cur_note = notes[i]
+        if last_note - cur_note > 12 and last_note is not -1:
+            notes[i] += 12
+        elif last_note - cur_note < -12 and last_note is not -1:
+            notes[i] -= 12
+
+    print "Notes: " + str(notes)
+    return notes
