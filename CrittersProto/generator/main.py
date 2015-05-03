@@ -51,7 +51,7 @@ audioPlayer.close()
 
 # Uncomment for code to write things into wav files
 # =================================================
-#
+
 # for currentSeed in xrange(1, 31):
 #     # set up wave file writing
 #     waver = wave.open("wav/box_output" + str(currentSeed) + ".wav", 'wb')
