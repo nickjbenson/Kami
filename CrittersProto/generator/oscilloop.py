@@ -22,7 +22,7 @@ class Oscilloop(object):
         # Key and chord
         key = C
         chord = random.choice(CHORDS)
-        self.notes = choose_notes(key, chord)
+        self.notes, self.config, self.norm_const = choose_notes(key, chord)
 
         self.note_velocity = 60 # NOTE velocity
 
@@ -109,3 +109,9 @@ class Oscilloop(object):
 
     def _noteoff(self, tick, pitch):
         self.synth.noteoff(self.channel, pitch)
+
+    def get_config(self):
+        return self.config
+
+    def get_norm_const(self):
+        return self.norm_const

@@ -21,7 +21,7 @@ kOutputChannels = 2
 
 
 
-for currentSeed in xrange(1, 31):
+for currentSeed in xrange(1, 11):
     # set up wave file writing
     waver = wave.open("../wav/osci_output" + str(currentSeed) + ".wav", 'wb')
     waver.setnchannels(kOutputChannels) #kOutputChannels
@@ -41,3 +41,15 @@ for currentSeed in xrange(1, 31):
     packedData = struct.pack(fmt, *data)
     waver.writeframes(packedData)
     waver.close()
+
+    # Output oscillation configuration file.
+    # This will be used by Unity to synchronize
+    # the critter's motion with the sound of the
+    # .wav file.
+    config_file = open("../wav/osci_output" + str(currentSeed) + "_config.txt", "wb")
+    config_contents = str(newOL.get_norm_const()) + "\n"
+    for (freq, amp) in newOL.get_config():
+        config_contents += "%s %s\n" % (freq, amp)
+    config_file.write(config_contents)
+    config_file.close()
+    print "Config file written and closed."
