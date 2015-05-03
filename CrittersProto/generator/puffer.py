@@ -47,7 +47,7 @@ class Puffer(object):
         idx = (idx-1)%len(PROGRESSIONS)
 
         # Key and chords
-        self.key = 60
+        self.key = 36
         self.chords = PROGRESSIONS[idx]
 
         self.note_velocity = 60
@@ -72,11 +72,10 @@ class Puffer(object):
         envelope_final_frames = 1000 # leave some frames for the note_off envelope
 
         while stopGeneration is not True:
-            if self.cur_idx < len(self.chords) and currentTick % (8*kTicksPerBeat) == 0:
+            if self.cur_idx < len(self.chords) and currentTick % (16*kTicksPerBeat) == 0:
                 # do the next _note_on
                 (offTick, chord) = self._chordon(currentTick)
-                if offTick > 0:
-                    pendingOffticks.append((offTick, chord))
+                pendingOffticks.append((offTick, chord))
             if len(pendingOffticks) > 0:
                 if pendingOffticks[0][0] <= currentTick:
                     (offTick, chord) = pendingOffticks.pop(0)
@@ -105,7 +104,7 @@ class Puffer(object):
 
     def _get_next_chord(self):
         chord = self.chords[self.cur_idx]
-        duration = 8
+        duration = 16
         self.cur_idx += 1
         return chord, duration
 

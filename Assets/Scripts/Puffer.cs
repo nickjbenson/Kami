@@ -4,7 +4,7 @@ using System.Collections;
 //Like a buffer fish, blows air in and out (with the tempo).
 public class Puffer : Critter {
 
-	public float tempo;
+	float tempo; //time per beat
 
 	bool expanding = true; //if false, contracting
 	Vector3 minSphere;
@@ -20,14 +20,15 @@ public class Puffer : Critter {
 	private int beatsSinceLastPlay = 0;
 
 	void Start () {
-		//tempo = GetComponentInParent<Kami> ().globalTempo; //for now, this is constant, so can be set once
-		prevTime = AudioSettings.dspTime;
+		tempo = kami.globalTempo; //for now, this is constant, so can be set once
+
 		float minR = 1;
 		float maxR = 1.2f;
 		minSphere = new Vector3 (minR, minR, minR);
 		maxSphere = new Vector3 (maxR, maxR, maxR);
 
-//		nextBeatTime = kami.getNextBeat ();
+		nextBeatTime = kami.getNextBeat ();
+		prevTime = nextBeatTime - tempo * beatsToLoop;
 
 		// AUDIO INITIALIZATION
 		// Find audio file to play
@@ -48,27 +49,26 @@ public class Puffer : Critter {
 		// BEAT-COUNTING BEHAVIOR
 		// **********************
 		
-		// Get a new target every beat
-//		if (nextBeatTime <= AudioSettings.dspTime) {
-//			nextBeatTime = kami.getNextBeat ();
-//			beatsSinceLastPlay += 1;
-//		}
+		if (nextBeatTime <= AudioSettings.dspTime) {
+			nextBeatTime = kami.getNextBeat ();
+			beatsSinceLastPlay += 1;
+		}
 
 		// *****************
 		// MOVEMENT BEHAVIOR
 		// *****************
 
 		double dt = (AudioSettings.dspTime - prevTime);
-		float frac = (float)dt / tempo;
+		float frac = (float)dt / (tempo * beatsToLoop / 2.0f);
 		if (expanding) {
 			transform.localScale = Vector3.Lerp (minSphere, maxSphere, frac);
 		} else {
 			transform.localScale = Vector3.Lerp (maxSphere, minSphere, frac);
 		}
 
-		if (dt >= tempo) {
+		if (frac >= 1) {
 			expanding = !expanding;
-			prevTime += tempo;
+			prevTime += tempo * beatsToLoop / 2.0f;
 		}
 
 		// Play music
