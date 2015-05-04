@@ -6,6 +6,9 @@ public abstract class Critter : MonoBehaviour {
 	// OBJECT HOOKS
 	public Kami kami;
 
+	// HALO
+	private Light halo;
+
 	// CAPTURE/GRAB VARIABLES
 	private bool captured = false;
 	private bool grabbed = false;
@@ -77,6 +80,11 @@ public abstract class Critter : MonoBehaviour {
 		// Start looping on the next available beat
 		beatsSinceLastPlay = beatsToLoop - 1;
 
+		// ****
+		// HALO
+		// ****
+		halo = transform.FindChild("Halo").gameObject.GetComponent<Light>();
+
 	}
 
 	void Update() {
@@ -127,6 +135,22 @@ public abstract class Critter : MonoBehaviour {
 			// Move away from the player. (again, scales movement with distance from the player)
 			transform.position += (transform.position - kami.transform.position) * kami.pushPullForce * Time.deltaTime;
 			grabbed = false;
+		}
+
+		// ****
+		// HALO
+		// ****
+		if (kami.getFocused (this)) {
+			halo.enabled = true;
+		} else {
+			halo.enabled = false;
+		}
+		if (grabbed) {
+			halo.color = Color.red;
+		} else if (captured) {
+			halo.color = Color.yellow;
+		} else {
+			halo.color = Color.white;
 		}
 
 		// ****************
