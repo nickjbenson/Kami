@@ -22,6 +22,7 @@ public class Oscilloop : Critter {
 	public Transform inner7;
 	public Transform inner8;
 	public Transform[] innerRings;
+	public Transform masterRing;
 	public Transform egg;
 
 	// OSCILLATION VARIABLES
@@ -120,6 +121,8 @@ public class Oscilloop : Critter {
 
 			ring.localPosition = newPosition;
 		}
+
+		masterRing.localPosition = new Vector3 (0, Mathf.Sin (0.025f * curTime * timeConstant), 0);
 
 		// egg.localPosition = new Vector3 (0, 0.1f * Mathf.Sin ((float)AudioSettings.dspTime * timeConstant), 0);
 
