@@ -59,9 +59,6 @@ public class Maracaws : Critter {
 		if (Input.GetKey("z")){
 			halo.color = Color.red;
 		}
-		if (Input.GetKey ("x")) {
-			halo.color = Color.yellow;
-		}
 
 		// Play music
 //		playSound();
