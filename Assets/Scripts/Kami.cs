@@ -12,26 +12,31 @@ public class Kami : MonoBehaviour {
 	public float globalTempo; //number of seconds until next beat
 	public int globalKey;
 
-	public string createKey = "q"; // Key to press to spawn things at random
-	public string captureKey = "c"; // Key for capturing critters (also used to dismiss)
-	public string focusKey = "f"; // Key for focusing on the target critter
+	public string createHummingloopKey = "1"; // Key to press to spawn a Hummingloop
+	public string createBoxwormKey = "2"; // Key to press to spawn a Hummingloop
+	public string createMaracawKey = "3"; // Key to press to spawn a Hummingloop
+	public string createMineKey = "4"; // Key to press to spawn a Hummingloop
+	public string createOscilloopKey = "5"; // Key to press to spawn a Hummingloop
+	public string pullKey = "c"; // Key for pulling on critters
+	public string pushKey = "x"; // Key for pushing on critters
 
 	public Transform hummingloop; // hummingloop prefab
 	public Transform boxworm; // boxworm prefab
-	public Transform puffer;
+	public Transform maracaw; // maracaw prefab
+	public Transform mine; // mine prefab
+	public Transform oscilloop; // oscilloop prefab
 
 	private float nextBeat; //time in seconds at which next note should be played
 
-	// Hummingloop spawn/movement radius
-	public float hummingMoveRad = 30;
-
-	// Boxworm spawn distance
-	public Vector3 boxwormSpawnDist = new Vector3(0, 0, 30);
-	// Boxworm spawn radius
-	public float boxwormSpawnRad = 30;
-
-	// No-go radius around player (for critters)
-	public float noGoRad = 2;
+	// CRITTER ACTION RADII
+	// No-Go / turnaround radius
+	public float turnaroundRad = 9f;
+	// Capture radius
+	public float captureRadius = 7f;
+	// Grab radius
+	public float grabRadius = 3f;
+	// Death radius (creatures start dying beyond this radius)
+	public float deathRadius = 45f;
 
 	// Focused transform (critter)
 	private Critter focus = null;
@@ -40,165 +45,117 @@ public class Kami : MonoBehaviour {
 	// Oculus Reticle
 	public OculusReticle reticle;
 
-	// Capturing (new system)
-	public float captureMinRad = 4f;
-	public float captureMaxRad = 7f;
-	private Critter[] capturedCritters;
-	private int captureIdx = 0;
-	public int maxCapturedCritters = 6;
-
-	// Releasing manually (new system)
-	public float releaseCommandTime = 3f;
-	private float releaseTimer = 0;
-	private bool releaseTimerEnabled = false;
-	private Critter releaseTimerCritter = null;
-	private bool captureKeyNotHeldSinceRelease = true;
+	// Pushing and Pulling
+	private bool pulling = false;
+	private bool pushing = false;
 
 	// Leap Control
 	public LeapControl leapControl;
-	public bool leapCapture = false;
-	public bool leapFocus = false;
+	public bool leapPull = false;
+	public bool leapPush = false;
+
+	// Oculus Toggle
+	public bool oculusEnabled = false;
 
 	void Start() {
 		nextBeat = (float) AudioSettings.dspTime + globalTempo;
-
-		capturedCritters = new Critter[maxCapturedCritters];
-	}
-
-	void BeginRelease() {
-		releaseTimerCritter = focus;
-		releaseTimerEnabled = true;
-		releaseTimer = releaseCommandTime;
-		captureKeyNotHeldSinceRelease = false;
-	}
-
-	void FinishRelease(bool successful) {
-		if (successful) {
-			releaseTimerCritter.Release ();
-			print ("Release successful.");
-		}
-		releaseTimerEnabled = false;
-		releaseTimer = 0;
-		releaseTimerCritter = null;
 	}
 
 	void Update(){
-//		OculusUpdate ();
+		OculusUpdate ();
 	}
 
 	void OculusUpdate () {
 
 		// Leap Motion checks
-		if (leapControl.ForceMagnitude <= -0.5) {
-			// Hand (palm) mostly facing towards the reticle (target object)
-			// interpreted as focus.
-			leapFocus = true;
-			leapCapture = false;
-		} else if (leapControl.ForceMagnitude >= 0.5) {
-			// Hand (palm) mostly facing away from the reticle (target object)
-			// interpreted as capture + focus.
-			leapFocus = true;
-			leapCapture = true;
-		} else {
-			leapFocus = false;
-			leapCapture = false;
+		if (oculusEnabled) {
+			if (leapControl.ForceMagnitude <= -0.5) {
+				// Hand (palm) mostly facing towards the reticle (target object)
+				// interpreted as focus.
+				leapPush = true;
+				leapPull = false;
+			} else if (leapControl.ForceMagnitude >= 0.5) {
+				// Hand (palm) mostly facing away from the reticle (target object)
+				// interpreted as capture + focus.
+				leapPush = true;
+				leapPull = true;
+			} else {
+				leapPush = false;
+				leapPull = false;
+			}
+			
+			print ("ForceMagnitude: " + leapControl.ForceMagnitude);
 		}
 
-		print ("ForceMagnitude: " + leapControl.ForceMagnitude);
-
-		if (Input.GetKey (createKey)) {
-			spawnRandomCritter ();
+		if (Input.GetKeyDown (createHummingloopKey)) {
+			spawnCritter("hummingloop");
+		}
+		if (Input.GetKeyDown (createBoxwormKey)) {
+			spawnCritter("boxworm");
+		}
+		if (Input.GetKeyDown (createMaracawKey)) {
+			spawnCritter("maracaw");
+		}
+		if (Input.GetKeyDown (createMineKey)) {
+			spawnCritter("mine");
+		}
+		if (Input.GetKeyDown (createOscilloopKey)) {
+			spawnCritter("oscilloop");
 		}
 
-		if (Input.GetKey (captureKey) || leapCapture) {
+		// Pulling
+		if (Input.GetKey (pullKey) || leapPull) {
 			if (focus != null) {
-				if (!focus.Captured && captureKeyNotHeldSinceRelease) {
-					// Start capturing!
-					focus.BeginCapturing ();
-				}
-				else if (!releaseTimerEnabled) {
-					// Start the release timer
-					// and set relevant release variables.
-					BeginRelease();
-				}
-			}
-		} else { // capture key not pressed
-			captureKeyNotHeldSinceRelease = true;
-			if (focus != null && focus.BeingCaptured) {
-				// Cancel capturing.
-				focus.StopCapturing();
-			}
-			// Reset the release timer if need be
-			if (releaseTimerEnabled) {
-				// failed release attempt
-				FinishRelease(false);
-			}
-		}
-
-		// Focus
-		if (Input.GetKey (focusKey) || leapFocus) {
-			// Start focusing.
-			focusActive = true;
-		} else {
-			// Cancel focusing.
-			focusActive = false;
-		}
-
-		// Releasing: Hold C on a captured critter.
-		// If you hold it longer than the release time
-		// set publically (a few seconds), the critter
-		// will be released.
-		if (releaseTimer > 0 && releaseTimerEnabled) {
-			releaseTimer -= Time.deltaTime;
-			// Make sure the player kept the focus on
-			// the desired critter the whole time.
-			if (releaseTimerCritter != focus) {
-				// failed release attempt
-				FinishRelease(false);
-			}
-		}
-		if (releaseTimer < 0 && releaseTimerEnabled) {
-			// successful release
-			FinishRelease (true);
-		}
-		
-		// Update focus based on reticle
-		Transform reticleTarget = reticle.Target;
-		if (reticleTarget != null) {
-			Critter possibleCritter = reticleTarget.GetComponentInParent<Critter> ();
-			if (possibleCritter != null) {
-				focus = possibleCritter;
+				pulling = true;
+				print ("Pulling on something.");
 			}
 		} else {
-			focus = null;
+			pulling = false;
 		}
-		print ("Focus: " + focus);
+
+		// Pushing
+		if (Input.GetKey (pushKey) || leapPush) {
+			if (focus != null) {
+				pushing = true;
+				print ("Pushing on something.");
+			}
+		} else {
+			pushing = false;
+		}
 	}
 
-	public void spawnRandomCritter() {
+	public void spawnCritter(string critterName) {
 
 		Transform type;
 		Vector3 location;
 		Quaternion rotation;
 		Transform t;
 
-		if (Random.value < 0.5) {
+		if (critterName == "hummingloop") {
 			// Spawn Hummingloop
 			type = hummingloop;
-			location = getRandomTarget ("hummingloop");
+			location = new Vector3(90, 90, 90); // temporary
 			rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
 			t = Instantiate (type, location, rotation) as Transform;
 			t.GetComponent<Critter>().kami = this;
-		} else {
+			t.position = t.GetComponent<Hummingloop>().getRandomSpawnLocation(); // set position
+			t.parent = transform;
+		} else if (critterName == "boxworm") {
 			// Spawn Boxworm
 			type = boxworm;
-			location = getRandomTarget ("boxworm");
+			location = new Vector3(90, 90, 90); // temporary
 			rotation = Quaternion.Euler (0, 90, 0);
 			t = Instantiate (type, location, rotation) as Transform;
 			t.GetComponent<Critter>().kami = this;
+			t.parent = transform;
+			print ("BOXWORM POSITIONS NOT SET AFTER SPAWN.");
+		} else if (critterName == "maracaw") {
+			print ("Spawn maracaw not implemented");
+		} else if (critterName == "mine") {
+			print ("Spawn mine not implemented");
+		} else if (critterName == "oscilloop") {
+			print ("Spawn oscilloop not implemented");
 		}
-
-		t.parent = transform;
 
 	}
 
@@ -214,55 +171,49 @@ public class Kami : MonoBehaviour {
 
 	/// <returns>A (somewhat) random target for the critter to head towards.</returns>
 	/// <param name="critterType">Critter type.</param>
-	public Vector3 getRandomTarget(string critterType) {
+	public Vector3 getRandomTargetzzzzDELETESOON(string critterType) {
 		if (critterType == "hummingloop") {
+			var hummingMoveRad = 0f; // just to get rid of errors
 			Vector3 rPos = Random.insideUnitSphere * hummingMoveRad;
-			while (rPos.sqrMagnitude < noGoRad * noGoRad) {
+			while (rPos.sqrMagnitude < turnaroundRad * turnaroundRad) {
 				rPos = Random.insideUnitSphere * hummingMoveRad; // try again
 			}
 			return rPos;
 		} else {
 			// boxworm
+			var hummingMoveRad = 0f; // just to get rid of errors
+			float boxwormSpawnRad = this.deathRadius - 5f;
 			Vector3 rPos = Random.insideUnitSphere * boxwormSpawnRad;
-			while (rPos.sqrMagnitude < noGoRad * noGoRad) {
+			while (rPos.sqrMagnitude < turnaroundRad * turnaroundRad) {
 				rPos = Random.insideUnitSphere * hummingMoveRad; // try again
 			}
-			return boxwormSpawnDist + rPos;
-		}
-	}
-
-	public Vector3 getCaptureSpaceTarget(string critterType) {
-		if (critterType == "hummingloop") {
-			return Random.onUnitSphere * Random.Range(captureMinRad, captureMaxRad);
-		} else {
-			print ("unsupported critter type: " + critterType);
-			return Vector3.zero;
+			return rPos;
 		}
 	}
 	
 	/// <summary>
 	/// Used by critters to ask whether or not they
-	/// (or something else) is in focus.
+	/// are being pushed or pulled right now.
 	/// </summary>
-	public int getFocusState(Critter critter) {
-		if (!focusActive || focus == null) {
+	public int getPushPullState(Critter critter) {
+		if (focus == null) {
 			return 0;
 		} else
 			return (focus == critter) ? 1 : -1;
 	}
 
+	// deprecated. use getPushPullState.
+	// backwards-compatibility reasons only, delete soon.
+	public int getFocusState(Critter critter) {
+		return getPushPullState (critter);
+	}
+
 	public void RegisterCapture(Critter critter) {
-		if (capturedCritters [captureIdx] != null) {
-			capturedCritters[captureIdx].Release ();
-		}
-		capturedCritters [captureIdx] = critter;
-		captureIdx += 1;
-		captureIdx %= maxCapturedCritters;
-		print ("Registered a critter.");
+		// k thats nice
 	}
 
 	public void DeregisterCapture(Critter critter) {
-
+		// mm hmm ok
 	}
 	
 }

@@ -93,8 +93,8 @@ public class Oscilloop : Critter {
 		// INFORMATION GATHERING
 		// *********************
 
-
 		curTime = (float)AudioSettings.dspTime - initTime;
+		float distanceToKami = Vector3.Distance (transform.position, kami.transform.position);
 
 		// **********************
 		// BEAT-COUNTING BEHAVIOR
@@ -124,7 +124,7 @@ public class Oscilloop : Critter {
 
 		masterRing.localPosition = new Vector3 (0, Mathf.Sin (0.025f * curTime * timeConstant), 0);
 
-		// egg.localPosition = new Vector3 (0, 0.1f * Mathf.Sin ((float)AudioSettings.dspTime * timeConstant), 0);
+		// 
 
 		// Finally, play beautiful sounds!
 		playSound ();
