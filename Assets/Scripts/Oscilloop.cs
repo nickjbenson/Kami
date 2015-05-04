@@ -12,7 +12,8 @@ public class Oscilloop : Critter {
 	public float timeConstant = 2f;
 	private float initTime = 0f;
 	public float curTime = 0f;
-	
+
+	// OBJECT HOOKS	
 	public Transform inner1;
 	public Transform inner2;
 	public Transform inner3;
@@ -31,35 +32,34 @@ public class Oscilloop : Critter {
 	private float[] freqs = new float[16];
 	private float[] amps = new float[16];
 	
-	// BEAT TRACKING / LOOPING VARIABLES
-	public int beatsToLoop = 64;
-	private double nextBeatTime;
-	AudioSource[] sources;
-	private int soundIndex = 0;
-	public int beatsSinceLastPlay = 0;
+	// MOVEMENT VARIABLES
+	public float speed = 0.02f; // Movement speed towards target
+	public float rotSpeed = 0.05f; // Rotation speed towards target
+	private Vector3 target; // target destination
+	public Transform travelTransform;
+	private bool refreshTarget = true; // whether we should get a new target
+	private bool leaving = false; // whether or not the hummingloop is leaving
+	
+	// LIFE/DEATH VARIABLES
+	public int survivalTime = 128;
+	private bool dying = false;
 
-	// Use this for initialization
-	void Start () {
-		nextBeatTime = kami.getNextBeat ();
+	public override void CritterStart() {
+		// Configure radius for grabbing,
+		// as oscilloops are rather large.
+		critterRadius = 3.0f;
+
+		// Animation time initialization.
 		initTime = (float)AudioSettings.dspTime;
 		
-		// AUDIO INITIALIZATION
-		// Find audio file to play
-		int idx = (int) Mathf.Ceil(Random.Range (1, 10));
-		print ("Oscilloop, chose " + idx);
-		// Load audio clip
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/osci_output" + idx);
-		// Get AudioSource components (already in Prefab)
-		sources = GetComponents<AudioSource> ();
-		foreach (AudioSource source in sources) {
-			source.clip = clip;
-		}
-		// Start looping on the next available beat
-		beatsSinceLastPlay = beatsToLoop - 1;
-
-		// OSCILLATION CONFIGURATION INITIALIZATION
+		// Ring oscillation configuration initialization.
 		innerRings = new Transform[] {inner1, inner2, inner3, inner4, inner5, inner6, inner7, inner8};
-
+	}
+	
+	public override AudioClip GetCritterAudio() {
+		int idx = (int) Mathf.Ceil(Random.Range (1, 10));
+		AudioClip clip = (AudioClip)Resources.Load ("Audio/osci_output" + idx);
+		
 		// Oscillation configuration text parsing
 		TextAsset config = (TextAsset)Resources.Load ("Audio/osci_output" + idx + "_config");
 		print (config.text);
@@ -84,67 +84,8 @@ public class Oscilloop : Critter {
 		for (i = 0; i < 16; i++) {
 			amps[i] /= norm_const;
 		}
-	}
-	
-	// Update is called once per frame
-	void Update () {
 
-		// *********************
-		// INFORMATION GATHERING
-		// *********************
-
-		curTime = (float)AudioSettings.dspTime - initTime;
-		float distanceToKami = Vector3.Distance (transform.position, kami.transform.position);
-
-		// **********************
-		// BEAT-COUNTING BEHAVIOR
-		// **********************
-		
-		// Get a new target every beat
-		if (nextBeatTime <= AudioSettings.dspTime) {
-			nextBeatTime = kami.getNextBeat();
-			beatsSinceLastPlay += 1;
-			print ("beat.");
-		}
-
-		// ****************
-		// RING OSCILLATION
-		// ****************
-
-		for (int i = 0; i < 8; i++) {
-			Transform ring = innerRings[i];
-
-			// There are 16 frequency oscillations and 8 rings,
-			// so here we sum 2 frequencies per ring.
-			Vector3 newPosition = new Vector3(0, Mathf.Sin(Mathf.PI * curTime * timeConstant * freqs[i*2]), 0) * amps[i*2];
-			newPosition += new Vector3(0, Mathf.Sin (Mathf.PI * curTime * timeConstant * freqs[i*2 + 1]), 0) * amps[i*2 + 1];
-
-			ring.localPosition = newPosition;
-		}
-
-		masterRing.localPosition = new Vector3 (0, Mathf.Sin (0.025f * curTime * timeConstant), 0);
-
-		// 
-
-		// Finally, play beautiful sounds!
-		playSound ();
-	}
-	
-	void playSound() {
-		if (beatsSinceLastPlay >= beatsToLoop) {
-			sources[soundIndex].PlayScheduled(nextBeatTime);
-			soundIndex = (soundIndex + 1)%sources.Length;
-			beatsSinceLastPlay = 0;
-		}
-	}
-
-	public override void CritterStart() {
-		print ("not yet implemented");
-	}
-	
-	public override AudioClip GetCritterAudio() {
-		int idx = (int) Mathf.Ceil(Random.Range (1, 10));
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/osci_output" + idx);
+		// Now return the clip
 		return clip;
 	}
 	
@@ -153,15 +94,102 @@ public class Oscilloop : Critter {
 	}
 	
 	public override void OnCritterBeat() {
-		print ("not yet implemented");
+		survivalTime -= 1;
+		refreshTarget = true;
 	}
 	
 	public override void PostCritterUpdate() {
-		print ("not yet implemented");
+		
+		// *********************
+		// INFORMATION GATHERING
+		// *********************
+		
+		curTime = (float)AudioSettings.dspTime - initTime;
+		
+		// ****************
+		// RING OSCILLATION
+		// ****************
+		
+		for (int i = 0; i < 8; i++) {
+			Transform ring = innerRings[i];
+			
+			// There are 16 frequency oscillations and 8 rings,
+			// so here we sum 2 frequencies per ring.
+			Vector3 newPosition = new Vector3(0, Mathf.Sin(Mathf.PI * curTime * timeConstant * freqs[i*2]), 0) * amps[i*2];
+			newPosition += new Vector3(0, Mathf.Sin (Mathf.PI * curTime * timeConstant * freqs[i*2 + 1]), 0) * amps[i*2 + 1];
+			
+			ring.localPosition = newPosition;
+		}
+		
+		masterRing.localPosition = new Vector3 (0, Mathf.Sin (0.025f * curTime * timeConstant), 0);
+
+		// *****************
+		// MOVEMENT BEHAVIOR
+		// *****************
+
+		// Modifed from Hummingloop
+		
+		if (BeingPulled || Captured) {
+			// Movement logic while captured or being pulled.
+			leaving = false;
+			
+		} else {
+			// Movement logic while not captured.
+			
+			// While not leaving, get new target whenever
+			// we must refresh it
+			if (!leaving) {
+				if (refreshTarget) {
+					target = getRandomSpawnLocation();
+					refreshTarget = false;
+				}
+			}
+			
+			// If too close to player, turn around
+			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled && survivalTime > 0) {
+				target = (transform.position - kami.transform.position) + transform.position;
+			}
+			
+			// Leave if survivalTime is below zero
+			if (survivalTime <= 0 && !leaving) {
+				leaving = true;
+				// Get a target far away
+				target = Random.onUnitSphere * 200;
+			}
+			
+			// Start dying past the death radius
+			if (DistanceFromKami > kami.deathRadius) {
+				dying = true;
+			}
+			
+			// Smoothly rotate travelTransform to target facing
+			travelTransform.rotation = Quaternion.Slerp(travelTransform.rotation,
+			                                      Quaternion.LookRotation (target - travelTransform.position),
+			                                      rotSpeed);
+			// Move in travelTransform's forward at speed
+			transform.position += travelTransform.forward * speed;
+			// Move travelTransform's position along with our transform's
+			travelTransform.position = transform.position;
+
+		}
+		
+		// **************
+		// DEATH BEHAVIOR
+		// **************
+		
+		// For now, just die immediately when dying
+		if (dying) {
+			Destroy(this.gameObject);
+		}
+
 	}
 	
 	public override Vector3 getRandomSpawnLocation() {
-		print ("you just spawned an oscilloop right on top of yourself. good job");
-		return Vector3.zero;
+		float maxSpawnRad = kami.deathRadius - 5f;
+		Vector3 rPos = Random.insideUnitSphere * maxSpawnRad;
+		while (rPos.sqrMagnitude < (kami.turnaroundRad+1) * (kami.turnaroundRad+1)) {
+			rPos = Random.insideUnitSphere * maxSpawnRad; // try again
+		}
+		return rPos;
 	}
 }

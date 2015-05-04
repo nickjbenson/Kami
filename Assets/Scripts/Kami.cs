@@ -145,8 +145,9 @@ public class Kami : MonoBehaviour {
 		Quaternion rotation;
 		Transform t;
 
+		// temporary/default assignments
 		type = hummingloop;
-		location = new Vector3(90, 90, 90); // temporary
+		location = new Vector3(90, 90, 90);
 		rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
 		
 		if (critterName == "hummingloop") {
@@ -163,9 +164,9 @@ public class Kami : MonoBehaviour {
 			// Spawn Mine
 			type = mine;
 		} else if (critterName == "oscilloop") {
-			print ("Spawn oscilloop not implemented");
-			// Spawn Mine
-			type = mine;
+			// Spawn Oscilloop
+			type = oscilloop;
+			rotation = Quaternion.Euler (0, 0, 0);
 		}
 		
 		t = Instantiate (type, location, rotation) as Transform;

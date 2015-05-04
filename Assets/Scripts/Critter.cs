@@ -12,6 +12,7 @@ public abstract class Critter : MonoBehaviour {
 	// CAPTURE/GRAB VARIABLES
 	private bool captured = false;
 	private bool grabbed = false;
+	protected float critterRadius = 1.0f;
 
 	// MOVEMENT VARIABLES
 	private bool beingPulled = false;
@@ -54,7 +55,7 @@ public abstract class Critter : MonoBehaviour {
 	}
 	public float DistanceFromKami {
 		get {
-			return distanceFromKami;
+			return distanceFromKami - critterRadius;
 		}
 	}
 
@@ -131,6 +132,7 @@ public abstract class Critter : MonoBehaviour {
 				transform.position += (kami.transform.position - transform.position) * kami.pushPullForce * Time.deltaTime;
 			} else {
 				grabbed = true;
+				grabbedDistanceFromKami = DistanceFromKami + critterRadius;
 			}
 		} else if (beingPushed) {
 			// Move away from the player. (again, scales movement with distance from the player)
@@ -138,9 +140,17 @@ public abstract class Critter : MonoBehaviour {
 			grabbed = false;
 		}
 
-		// ****
-		// HALO
-		// ****
+		// ****************
+		// GRABBED BEHAVIOR
+		// ****************
+
+		if (grabbed) {
+			transform.position = kami.reticle.looker.transform.forward * grabbedDistanceFromKami;
+		}
+		
+		// **************
+		// SELECTION HALO
+		// **************
 		if (kami.getFocused (this)) {
 			halo.enabled = true;
 		} else {
@@ -152,15 +162,6 @@ public abstract class Critter : MonoBehaviour {
 			halo.color = Color.yellow;
 		} else {
 			halo.color = Color.white;
-		}
-
-		// ****************
-		// GRABBED BEHAVIOR
-		// ****************
-
-		if (grabbed) {
-			grabbedDistanceFromKami = DistanceFromKami;
-			transform.position = kami.reticle.looker.transform.forward * grabbedDistanceFromKami;
 		}
 		
 		// *************

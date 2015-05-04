@@ -60,7 +60,7 @@ public class Maracaws : Critter {
 			}
 			
 			// If too close to player, turn around
-			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled) {
+			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled && survivalTime > 0) {
 				target = (transform.position - kami.transform.position) + transform.position;
 			}
 			
