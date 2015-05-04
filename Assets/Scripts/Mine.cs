@@ -31,7 +31,7 @@ public class Mine : Critter {
 
 		// AUDIO INITIALIZATION
 		// Find audio file to play
-		int idx = (int) Mathf.Ceil(Random.Range (1, 9));
+		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
 		// Load audio clip
 		AudioClip clip = (AudioClip)Resources.Load ("Audio/mine_output" + idx);
 		// Get AudioSource components (already in Prefab)
