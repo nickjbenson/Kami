@@ -18,6 +18,7 @@ public class Kami : MonoBehaviour {
 
 	public Transform hummingloop; // hummingloop prefab
 	public Transform boxworm; // boxworm prefab
+	public Transform puffer;
 
 	private float nextBeat; //time in seconds at which next note should be played
 
@@ -81,7 +82,11 @@ public class Kami : MonoBehaviour {
 		releaseTimerCritter = null;
 	}
 
-	void Update () {
+	void Update(){
+//		OculusUpdate ();
+	}
+
+	void OculusUpdate () {
 
 		// Leap Motion checks
 		if (leapControl.ForceMagnitude <= -0.5) {
@@ -198,6 +203,9 @@ public class Kami : MonoBehaviour {
 	}
 
 	public float getNextBeat() {
+		if (nextBeat == 0) {
+			nextBeat = (float) AudioSettings.dspTime;
+		}
 		if (nextBeat <= AudioSettings.dspTime) {
 			nextBeat += globalTempo;
 		}
