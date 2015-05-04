@@ -28,19 +28,6 @@ public class Mine : Critter {
 
 		nextBeatTime = kami.getNextBeat ();
 		prevTime = nextBeatTime - tempo * beatsToLoop;
-
-		// AUDIO INITIALIZATION
-		// Find audio file to play
-		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
-		// Load audio clip
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/mine_output" + idx);
-		// Get AudioSource components (already in Prefab)
-		sources = GetComponents<AudioSource> ();
-		foreach (AudioSource source in sources) {
-			source.clip = clip;
-		}
-		// Start looping on the next available beat
-		beatsSinceLastPlay = beatsToLoop - 1;
 	}
 	
 	void Update () {
@@ -80,5 +67,28 @@ public class Mine : Critter {
 			soundIndex = (soundIndex + 1)%sources.Length;
 			beatsSinceLastPlay = 0;
 		}
+	}
+	
+	public override AudioClip GetCritterAudio() {
+		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
+		AudioClip clip = (AudioClip)Resources.Load ("Audio/mine_output" + idx);
+		return clip;
+	}
+	
+	public override int GetCritterBeatsToLoop() {
+		return 8;
+	}
+	
+	public override void OnCritterBeat() {
+		print ("not yet implemented");
+	}
+	
+	public override void PostCritterUpdate() {
+		print ("not yet implemented");
+	}
+	
+	public override Vector3 getRandomSpawnLocation() {
+		print ("you just spawned a mine right on top of yourself. good job");
+		return Vector3.zero;
 	}
 }

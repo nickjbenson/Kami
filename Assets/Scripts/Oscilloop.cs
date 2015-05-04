@@ -137,4 +137,27 @@ public class Oscilloop : Critter {
 			beatsSinceLastPlay = 0;
 		}
 	}
+	
+	public override AudioClip GetCritterAudio() {
+		int idx = (int) Mathf.Ceil(Random.Range (1, 10));
+		AudioClip clip = (AudioClip)Resources.Load ("Audio/osci_output" + idx);
+		return clip;
+	}
+	
+	public override int GetCritterBeatsToLoop() {
+		return 64;
+	}
+	
+	public override void OnCritterBeat() {
+		print ("not yet implemented");
+	}
+	
+	public override void PostCritterUpdate() {
+		print ("not yet implemented");
+	}
+	
+	public override Vector3 getRandomSpawnLocation() {
+		print ("you just spawned an oscilloop right on top of yourself. good job");
+		return Vector3.zero;
+	}
 }

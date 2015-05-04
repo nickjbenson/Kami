@@ -57,4 +57,27 @@ public class Maracaws : Critter {
 			beatsSinceLastPlay = 0;
 		}
 	}
+
+	public override AudioClip GetCritterAudio() {
+		int idx = (int) Mathf.Ceil(Random.Range (1, 27));
+		AudioClip clip = (AudioClip)Resources.Load ("Audio/maracaws_output" + idx);
+		return clip;
+	}
+
+	public override int GetCritterBeatsToLoop() {
+		return 8;
+	}
+
+	public override void OnCritterBeat() {
+		print ("not yet implemented");
+	}
+
+	public override void PostCritterUpdate() {
+		print ("not yet implemented");
+	}
+
+	public override Vector3 getRandomSpawnLocation() {
+		print ("you just spawned a maracaw right on top of yourself. good job");
+		return Vector3.zero;
+	}
 }

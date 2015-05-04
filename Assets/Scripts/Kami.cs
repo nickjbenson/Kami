@@ -48,11 +48,13 @@ public class Kami : MonoBehaviour {
 	// Pushing and Pulling
 	private bool pulling = false;
 	private bool pushing = false;
+	public float pushPullForceMultiplier = 1.0f;
 
 	// Leap Control
 	public LeapControl leapControl;
 	public bool leapPull = false;
 	public bool leapPush = false;
+	public float pushPullForce = 0f;
 
 	// Oculus Toggle
 	public bool oculusEnabled = false;
@@ -85,6 +87,7 @@ public class Kami : MonoBehaviour {
 			}
 			
 			print ("ForceMagnitude: " + leapControl.ForceMagnitude);
+			print ("HEY! SET THE PUSHPULL FORCE APPROPRIATELY HERE!");
 		}
 
 		if (Input.GetKeyDown (createHummingloopKey)) {
@@ -107,6 +110,7 @@ public class Kami : MonoBehaviour {
 		if (Input.GetKey (pullKey) || leapPull) {
 			if (focus != null) {
 				pulling = true;
+				pushPullForce = pushPullForceMultiplier;
 				print ("Pulling on something.");
 			}
 		} else {
@@ -117,6 +121,7 @@ public class Kami : MonoBehaviour {
 		if (Input.GetKey (pushKey) || leapPush) {
 			if (focus != null) {
 				pushing = true;
+				pushPullForce = pushPullForceMultiplier;
 				print ("Pushing on something.");
 			}
 		} else {
@@ -138,7 +143,7 @@ public class Kami : MonoBehaviour {
 			rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
 			t = Instantiate (type, location, rotation) as Transform;
 			t.GetComponent<Critter>().kami = this;
-			t.position = t.GetComponent<Hummingloop>().getRandomSpawnLocation(); // set position
+			t.position = t.GetComponent<Critter>().getRandomSpawnLocation(); // set position
 			t.parent = transform;
 		} else if (critterName == "boxworm") {
 			// Spawn Boxworm
@@ -147,8 +152,8 @@ public class Kami : MonoBehaviour {
 			rotation = Quaternion.Euler (0, 90, 0);
 			t = Instantiate (type, location, rotation) as Transform;
 			t.GetComponent<Critter>().kami = this;
+			t.position = t.GetComponent<Critter>().getRandomSpawnLocation(); // set position
 			t.parent = transform;
-			print ("BOXWORM POSITIONS NOT SET AFTER SPAWN.");
 		} else if (critterName == "maracaw") {
 			print ("Spawn maracaw not implemented");
 		} else if (critterName == "mine") {
@@ -168,38 +173,21 @@ public class Kami : MonoBehaviour {
 		}
 		return nextBeat;
 	}
-
-	/// <returns>A (somewhat) random target for the critter to head towards.</returns>
-	/// <param name="critterType">Critter type.</param>
-	public Vector3 getRandomTargetzzzzDELETESOON(string critterType) {
-		if (critterType == "hummingloop") {
-			var hummingMoveRad = 0f; // just to get rid of errors
-			Vector3 rPos = Random.insideUnitSphere * hummingMoveRad;
-			while (rPos.sqrMagnitude < turnaroundRad * turnaroundRad) {
-				rPos = Random.insideUnitSphere * hummingMoveRad; // try again
-			}
-			return rPos;
-		} else {
-			// boxworm
-			var hummingMoveRad = 0f; // just to get rid of errors
-			float boxwormSpawnRad = this.deathRadius - 5f;
-			Vector3 rPos = Random.insideUnitSphere * boxwormSpawnRad;
-			while (rPos.sqrMagnitude < turnaroundRad * turnaroundRad) {
-				rPos = Random.insideUnitSphere * hummingMoveRad; // try again
-			}
-			return rPos;
-		}
-	}
 	
 	/// <summary>
 	/// Used by critters to ask whether or not they
 	/// are being pushed or pulled right now.
 	/// </summary>
 	public int getPushPullState(Critter critter) {
-		if (focus == null) {
-			return 0;
-		} else
-			return (focus == critter) ? 1 : -1;
+		if (focus == critter) {
+			if (pulling) {
+				return 1;
+			}
+			else if (pushing) {
+				return -1;
+			}
+		}
+		return 0;
 	}
 
 	// deprecated. use getPushPullState.

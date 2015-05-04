@@ -16,116 +16,38 @@ public class Boxworm : Critter {
 	private bool leaving = false; // whether or not the boxworm is leaving
 
 	// BEAT TRACKING / LOOPING VARIABLES
-	public int survivalTime = 32;
-	public int beatsToLoop = 16;
 	public int beatsToTurnAround = 16;
-	private double nextBeatTime;
-	AudioSource[] sources;
-	private int soundIndex = 0;
-	private int beatsSinceLastPlay = 0;
 	private int beatsSinceTurnAround = 0;
-	
-	// FOCUS VARIABLES
-	public float focusSpeed = 0.5f;
-	private int focusState = 0; // -1 = unfocus, 0 = default, 1 = focus
-	private float targetVolume = 1.0f;
-	private float target3DBlend = 1.0f;
-	private float actualVolume = 1.0f;
-	private float actualBlend = 1.0f;
 
-	// CAPTURE VARIABLES
-	private Vector3 captureTargetV = Vector3.zero;
+	// LIFE/DEATH VARIABLES
+	public int survivalTime = 32;
+	private bool dying = false;
 
-	// Use this for initialization
-	void Start () {
-		nextBeatTime = kami.getNextBeat ();
-		
-		// AUDIO INITIALIZATION
-		// Find audio file to play
+	public override AudioClip GetCritterAudio() {
 		int idx = (int) Mathf.Ceil(Random.Range (3, 29));
-		// Load audio clip
 		AudioClip clip = (AudioClip)Resources.Load ("Audio/box_output" + idx);
-		// Get AudioSource components (already in Prefab)
-		sources = GetComponents<AudioSource> ();
-		foreach (AudioSource source in sources) {
-			source.clip = clip;
-		}
-		// Start looping on the next available beat
-		beatsSinceLastPlay = beatsToLoop - 1;
+		return clip;
 	}
 
-	// Critter handles most of the logistics of capture. Here
-	// we just need to do some additional target logic so the
-	// hummingloop knows where to go when it's being "captured."
-	public override void OnStartCapture() {
-		captureTargetV = kami.transform.position;
+	public override int GetCritterBeatsToLoop() {
+		return 8;
 	}
 	
-	// As above.
-	public override void OnStopCapture() {
-		captureTargetV = Vector3.zero;
+	// Called once per beat.
+	public override void OnCritterBeat() {
+		beatsSinceTurnAround += 1;
+		survivalTime -= 1;
 	}
 
-	// On release, set turnaround time to be artificially low
-	// so that the boxworm moves away from the player
-	// before turning around. (Only applies if the boxworm
-	// isn't already leaving, which is very likely.)
-	public override void OnRelease() {
-		beatsSinceTurnAround = -beatsToTurnAround;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-
-		// *********************
-		// INFORMATION GATHERING
-		// *********************
-		
-		float distanceToKami = Vector3.Distance (transform.position, kami.transform.position);
-
-		// **********************
-		// BEAT-COUNTING BEHAVIOR
-		// **********************
-		
-		// Track beats
-		if (nextBeatTime <= AudioSettings.dspTime) {
-			nextBeatTime = kami.getNextBeat();
-			beatsSinceLastPlay += 1;
-
-			beatsSinceTurnAround += 1;
-			if (BeingCaptured) {
-				// Basically, capturing moves the center
-				// of the boxworm's movement pattern (which
-				// normally is back-and-forth)
-				beatsSinceTurnAround = beatsToTurnAround/2;
-			}
-
-			survivalTime -= 1;
-
-			if (Captured && survivalTime < 0) {
-				// Leave on release, but survive for a while
-				survivalTime = 0;
-			}
-		}
-
-		// *****************
-		// CAPTURE BEHAVIOR
-		// *****************
-		
-		if (distanceToKami <= kami.captureRadius && !Captured && BeingCaptured) {
-			FinalizeCapture();
-		}
+	public override void PostCritterUpdate() {
 
 		// *****************
 		// MOVEMENT BEHAVIOR
 		// *****************
-
-		if (BeingCaptured) {
-			// If a boxworm is being captured,
-			// just move (without changing facing) towards the player
-
-			transform.position += (captureTargetV - transform.position).normalized * speed;
-
+		
+		if (Captured || BeingPulled) {
+			// Don't think anything is necessary here??
+			
 		} else {
 			// If not being captured, move back and forth.
 			// Movement while not captured and movement while captured
@@ -136,13 +58,19 @@ public class Boxworm : Critter {
 			transform.position += transform.forward * speed;
 			
 			// If too close to player, turn around
-			if (Vector3.Distance (transform.position, kami.transform.position) <= kami.turnaroundRad
-			    && !BeingCaptured && !Captured) {
-				beatsSinceTurnAround = beatsToTurnAround;
+			if (DistanceFromKami <= kami.turnaroundRad) {
+				// If moving forward would bring us closer to the player
+				if (Vector3.Distance(transform.position + transform.forward,
+				                     kami.transform.position)
+				    < Vector3.Distance (transform.position - transform.forward,
+				                        kami.transform.position)) {
+					// turn around.
+					beatsSinceTurnAround = beatsToTurnAround;
+				}
 			}
 			
 			// Turn around every X beats, only if not leaving
-			if (beatsSinceTurnAround >= beatsToTurnAround && (!leaving || Captured)) {
+			if (beatsSinceTurnAround >= beatsToTurnAround && (!leaving)) {
 				// Turn around
 				Vector3 eulerA = transform.rotation.eulerAngles;
 				transform.rotation = Quaternion.Euler (eulerA.x, eulerA.y+180, eulerA.z);
@@ -155,50 +83,30 @@ public class Boxworm : Critter {
 				leaving = true;
 			}
 			
-			// After even more beats, just disappear
-			if (survivalTime <= -18) {
-				Destroy (this.gameObject);
+			// Start dying past the death radius
+			if (DistanceFromKami > kami.deathRadius) {
+				dying = true;
 			}
+			
+			// **************
+			// DEATH BEHAVIOR
+			// **************
+			
+			// For now, just die immediately when dying
+			if (dying) {
+				Destroy(this.gameObject);
+			}
+			
+		}
+	}
 
+	public override Vector3 getRandomSpawnLocation() {
+		float boxwormSpawnRad = kami.deathRadius - 5f;
+		Vector3 rPos = Random.insideUnitSphere * boxwormSpawnRad;
+		while (rPos.sqrMagnitude < kami.turnaroundRad * kami.turnaroundRad) {
+			rPos = Random.insideUnitSphere * boxwormSpawnRad; // try again
 		}
-	
-		// *****************
-		// FOCUSING BEHAVIOR
-		// *****************
-		
-		// Determine focus state. -1 is unfocused, 0 is default, 1 is focused
-		focusState = kami.getFocusState(this);
-		
-		if (focusState < 0) {
-			targetVolume = 0.1f;
-			target3DBlend = 1f; // fully 3D
-		} else if (focusState == 0) {
-			targetVolume = 1f;
-			target3DBlend = 1f; // fully 3D
-		} else {
-			targetVolume = 1f;
-			target3DBlend = 0f; // fully 2D (ignore spatial volume dropoff)
-		}
-		
-		// Lerp volume and 3D blend.
-		actualVolume = Mathf.Lerp (actualVolume, targetVolume, focusSpeed);
-		actualBlend = Mathf.Lerp (actualBlend, target3DBlend, focusSpeed);
-		
-		// Actually set volume and blend.
-		foreach (AudioSource source in sources) {
-			source.volume = actualVolume;
-			source.spatialBlend = actualBlend;
-		}
-		
-		// Finally, play beautiful sounds!
-		playSound ();
+		return rPos;
 	}
 	
-	void playSound() {
-		if (beatsSinceLastPlay >= beatsToLoop) {
-			sources[soundIndex].PlayScheduled(nextBeatTime);
-			soundIndex = (soundIndex + 1)%sources.Length;
-			beatsSinceLastPlay = 0;
-		}
-	}
 }
