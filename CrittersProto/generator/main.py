@@ -27,12 +27,12 @@ kOutputChannels = 2
 
 # get the actual frames
 
-# newCritter = boxworm.BoxWorm(1)
-#newCritter = hummingloop.HummingLoop(1)
-# newCritter = oscilloop.Oscilloop(10)
-# newCritter = mine.Mine(15)
-# newCritter = maracaws.Maracaws(15)
-#newFrames = newCritter.get_frames()
+# #newCritter = boxworm.BoxWorm(1)
+# # newCritter = hummingloop.HummingLoop(1)
+# # newCritter = oscilloop.Oscilloop(10)
+# newCritter = mine.Mine(1)
+# # newCritter = maracaws.Maracaws(15)
+# newFrames = newCritter.get_frames()
 
 
 # # Follows code to play things out loud
@@ -52,17 +52,18 @@ kOutputChannels = 2
 #Uncomment for code to write things into wav files
 #=================================================
 
-for currentSeed in xrange(1, 31):
+for currentSeed in xrange(1, 9):
     # set up wave file writing
-    waver = wave.open("wav/box_output" + str(currentSeed) + ".wav", 'wb')
+    waver = wave.open("wav/mine_output" + str(currentSeed) + ".wav", 'wb')
     waver.setnchannels(kOutputChannels) #kOutputChannels
     waver.setsampwidth(2) # let's convert things into 16 bit integer format
     waver.setframerate(kSamplingRate)
 
-    # newHL = hummingloop.HummingLoop(currentSeed)
-    # newFrames = newHL.get_frames()
-    newBW = boxworm.BoxWorm(currentSeed)
-    newFrames = newBW.get_frames()
+    #newCritter = hummingloop.HummingLoop(currentSeed)
+    #newCritter = boxworm.BoxWorm(currentSeed)
+    #newCritter = maracaws.Maracaws(currentSeed)
+    newCritter = mine.Mine(currentSeed)
+    newFrames = newCritter.get_frames()
     data = newFrames * np.iinfo(np.int16).max
     data = data.astype(np.int16)
     fmt = 'h'*len(data)

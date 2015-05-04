@@ -73,6 +73,18 @@ class BaseGenerator(object):
         currentNotes = self.get_notes_list()
 
         while stopGeneration is not True:
+            # First, generate ticks up to this point
+            new_frames, good = self.synth.generate(deltaTicks * kFramesPerTick)
+
+            # check if we're done, before committing new frames
+            if self.cur_idx >= len(currentNotes) and len(pendingOffticks) < 1:
+                if np.absolute(new_frames).max() <= 0.001:
+                    stopGeneration = True
+                    continue
+
+            data_frames = np.append(data_frames, new_frames)
+
+            # Apply config changes for this new tick
             if self.cur_idx < len(currentNotes) and currentTick % self.ticksPerNote == 0:
                 # do the next _note_on
                 (offTick, pitch) = self._noteon(currentTick)
@@ -82,24 +94,17 @@ class BaseGenerator(object):
                 if pendingOffticks[0][0] <= currentTick:
                     (offTick, pitch) = pendingOffticks.pop(0)
                     self._noteoff(offTick, pitch)
-            new_frames, good = self.synth.generate(deltaTicks * kFramesPerTick)
-            data_frames = np.append(data_frames, new_frames)
+            
 
-            # get the next beat!
+            # get the next tick
             lastTick = currentTick
-            tickOfNextNote = (currentTick + self.ticksPerNote)
+            tickOfNextNote = int((currentTick + self.ticksPerNote) / self.ticksPerNote) * self.ticksPerNote
             nextTick = tickOfNextNote
             if len(pendingOffticks) > 0:
                 currentTick = min(nextTick, pendingOffticks[0][0])
             else:
                 currentTick = nextTick
             deltaTicks = currentTick - lastTick
-
-            # check if we're done
-            if self.cur_idx >= len(currentNotes) and len(pendingOffticks) < 1:
-                #print np.absolute(new_frames).max()
-                if np.absolute(new_frames).max() <= 0.001:
-                    stopGeneration = True
 
         return data_frames
 
@@ -135,7 +140,7 @@ class BaseGenerator(object):
                 noteVelocity = self.get_note_velocity()
                 self.synth.noteon(self.channel, pitch, int(noteVelocity))
             # post note-off:
-            off_tick = tick + note_duration * kTicksPerBeat
+            off_tick = tick + note_duration * self.ticksPerNote
             return (off_tick, noteset)
         else:
             pitch = noteset
