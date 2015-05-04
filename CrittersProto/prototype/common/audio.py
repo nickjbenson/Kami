@@ -40,7 +40,7 @@ class Audio(object):
                                     rate = kSamplingRate,
                                     output = True,
                                     input = False,
-                                    output_device_index = dev_idx,
+                                    output_device_index = None,
                                     stream_callback = self._callback)
       self.gain = .5
       self.generators = []

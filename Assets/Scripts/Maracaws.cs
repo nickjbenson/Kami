@@ -1,14 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Mine : Critter {
+public class Maracaws : Critter {
 
-	float tempo; //time per beat
-
-	bool expanding = true; //if false, contracting
-	Vector3 minSphere;
-	Vector3 maxSphere;
-	double prevTime; //the previous time some change in state happened
+	public double angularSpeed;
 	
 	// BEAT TRACKING / LOOPING VARIABLES
 	public int survivalTime = 24;
@@ -19,21 +14,13 @@ public class Mine : Critter {
 	private int beatsSinceLastPlay = 0;
 
 	void Start () {
-		tempo = kami.globalTempo; //for now, this is constant, so can be set once
-
-		float minR = 1;
-		float maxR = 1.2f;
-		minSphere = new Vector3 (minR, minR, minR);
-		maxSphere = new Vector3 (maxR, maxR, maxR);
-
 		nextBeatTime = kami.getNextBeat ();
-		prevTime = nextBeatTime - tempo * beatsToLoop;
 
 		// AUDIO INITIALIZATION
 		// Find audio file to play
-		int idx = (int) Mathf.Ceil(Random.Range (1, 9));
+		int idx = (int) Mathf.Ceil(Random.Range (1, 27));
 		// Load audio clip
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/mine_output" + idx);
+		AudioClip clip = (AudioClip)Resources.Load ("Audio/maracaws_output" + idx);
 		// Get AudioSource components (already in Prefab)
 		sources = GetComponents<AudioSource> ();
 		foreach (AudioSource source in sources) {
@@ -57,18 +44,7 @@ public class Mine : Critter {
 		// MOVEMENT BEHAVIOR
 		// *****************
 
-		double dt = (AudioSettings.dspTime - prevTime);
-		float frac = (float)dt / (tempo * beatsToLoop / 2.0f);
-		if (expanding) {
-			transform.localScale = Vector3.Lerp (minSphere, maxSphere, frac);
-		} else {
-			transform.localScale = Vector3.Lerp (maxSphere, minSphere, frac);
-		}
-
-		if (frac >= 1) {
-			expanding = !expanding;
-			prevTime += tempo * beatsToLoop / 2.0f;
-		}
+		transform.Rotate (0.0f, 0.0f, (float) angularSpeed);
 
 		// Play music
 		playSound();
