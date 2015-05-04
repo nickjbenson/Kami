@@ -60,6 +60,11 @@ public abstract class Critter : MonoBehaviour {
 
 	void Start() {
 
+		// ****
+		// HALO
+		// ****
+		halo = transform.FindChild("Halo").gameObject.GetComponent<Light>();
+
 		// ********************
 		// AUDIO INITIALIZATION
 		// ********************
@@ -79,12 +84,7 @@ public abstract class Critter : MonoBehaviour {
 		
 		// Start looping on the next available beat
 		beatsSinceLastPlay = beatsToLoop - 1;
-
-		// ****
-		// HALO
-		// ****
-		halo = transform.FindChild("Halo").gameObject.GetComponent<Light>();
-
+	
 	}
 
 	void Update() {
