@@ -27,47 +27,47 @@ kOutputChannels = 2
 
 # get the actual frames
 
-# newCritter = boxworm.BoxWorm(1)
-# newCritter = hummingloop.HummingLoop(1)
-# newCritter = oscilloop.Oscilloop(10)
-# newCritter = mine.Mine(15)
-newCritter = maracaws.Maracaws(15)
-newFrames = newCritter.get_frames()
+# #newCritter = boxworm.BoxWorm(1)
+# # newCritter = hummingloop.HummingLoop(1)
+# # newCritter = oscilloop.Oscilloop(10)
+# newCritter = mine.Mine(1)
+# # newCritter = maracaws.Maracaws(15)
+# newFrames = newCritter.get_frames()
 
 
-# Follows code to play things out loud
-# =================================================
+# # Follows code to play things out loud
+# # =================================================
 
-audioPlayer = audio_player.AudioPlayer()
-audioPlayer.queueFramesForPlay(newFrames)
-
-# wait for stream to finish (5)
-while audioPlayer.isActive():
-    time.sleep(0.1)
-
-audioPlayer.close()
+##audioPlayer = audio_player.AudioPlayer()
+##audioPlayer.queueFramesForPlay(newFrames)
+##
+### wait for stream to finish (5)
+##while audioPlayer.isActive():
+##    time.sleep(0.1)
+##
+##audioPlayer.close()
 
 
 
 #Uncomment for code to write things into wav files
 #=================================================
 
-# for currentSeed in xrange(1, 31):
-#     # set up wave file writing
-#     waver = wave.open("wav/hum_output" + str(currentSeed) + ".wav", 'wb')
-#     waver.setnchannels(kOutputChannels) #kOutputChannels
-#     waver.setsampwidth(2) # let's convert things into 16 bit integer format
-#     waver.setframerate(kSamplingRate)
+for currentSeed in xrange(1, 9):
+    # set up wave file writing
+    waver = wave.open("wav/mine_output" + str(currentSeed) + ".wav", 'wb')
+    waver.setnchannels(kOutputChannels) #kOutputChannels
+    waver.setsampwidth(2) # let's convert things into 16 bit integer format
+    waver.setframerate(kSamplingRate)
 
-#     newHL = hummingloop.HummingLoop(currentSeed)
-#     newFrames = newHL.get_frames()
-#     # newBW = boxworm.BoxWorm(currentSeed)
-#     # newFrames = newBW.get_frames()
-#     data = newFrames * np.iinfo(np.int16).max
-#     data = data.astype(np.int16)
-#     fmt = 'h'*len(data)
+    #newCritter = hummingloop.HummingLoop(currentSeed)
+    #newCritter = boxworm.BoxWorm(currentSeed)
+    #newCritter = maracaws.Maracaws(currentSeed)
+    newCritter = mine.Mine(currentSeed)
+    newFrames = newCritter.get_frames()    data = newFrames * np.iinfo(np.int16).max
+    data = data.astype(np.int16)
+    fmt = 'h'*len(data)
 
-#     packedData = struct.pack(fmt, *data)
-#     waver.writeframes(packedData)
-#     waver.close()
+    packedData = struct.pack(fmt, *data)
+    waver.writeframes(packedData)
+    waver.close()
 

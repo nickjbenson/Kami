@@ -35,7 +35,7 @@ PROG_8 = [VIII, IV, V, I]
 # Master progressions list
 PROGRESSIONS = [PROG_1, PROG_2, PROG_3, PROG_4, PROG_5, PROG_6, PROG_7, PROG_8]
 
-NOTES_PER_BEAT = 1
+NOTES_PER_BEAT = 0.25
 
 class Mine(BaseGenerator):
     def __init__(self, idx):
@@ -45,7 +45,7 @@ class Mine(BaseGenerator):
         # Key and chords
         self.key = 36
         self.chords = PROGRESSIONS[idx]
-        self.note_velocity = 60
+        self.note_velocity = 120
 
         self.set_cpb(0, 0, 58) #tuba
         self.set_num_notes_per_beat(NOTES_PER_BEAT)
