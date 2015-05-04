@@ -9,15 +9,8 @@
 #
 #####################################################################
 
-import random
-import numpy as np
-from synth import Synth
+from baseGenerator import BaseGenerator
 
-# todo: move into global file
-kFramesPerSecond = 44100
-kBeatsPerSecond = 8
-kTicksPerBeat = 480
-kFramesPerTick = kFramesPerSecond / (kBeatsPerSecond * kTicksPerBeat)
 
 # Chord types
 I = [0, 4, 7]
@@ -42,85 +35,25 @@ PROG_8 = [VIII, IV, V, I]
 # Master progressions list
 PROGRESSIONS = [PROG_1, PROG_2, PROG_3, PROG_4, PROG_5, PROG_6, PROG_7, PROG_8]
 
-class Mine(object):
-    def __init__(self, idx):
-        idx = (idx-1)%len(PROGRESSIONS)
+NOTES_PER_BEAT = 1
 
+class Mine(BaseGenerator):
+    def __init__(self, idx):
+        BaseGenerator.__init__(self, 1)
+
+        idx = (idx-1)%len(PROGRESSIONS)
         # Key and chords
         self.key = 36
         self.chords = PROGRESSIONS[idx]
-
         self.note_velocity = 60
 
-        self.synth = Synth('../FluidR3_GM.sf2')
-        self.channel = 0
-        cbp = (self.channel, 0, 58) #tuba
-        self.synth.program(*cbp)
+        self.set_cpb(0, 0, 58) #tuba
+        self.set_num_notes_per_beat(NOTES_PER_BEAT)
 
-        self.cur_idx = 0
+    def get_notes_list(self):
+        return self.chords
 
-    def get_frames(self):
-        # Actual script
-        # frames
-        data_frames = []
-         # start generating things
-        currentTick = 0
-        lastTick = 0
-        stopGeneration = False
-        pendingOffticks = []
-        deltaTicks = 0
-        envelope_final_frames = 1000 # leave some frames for the note_off envelope
+    def get_note_velocity(self):
+        return self.note_velocity
 
-        while stopGeneration is not True:
-            if self.cur_idx < len(self.chords) and currentTick % (16*kTicksPerBeat) == 0:
-                # do the next _note_on
-                (offTick, chord) = self._chordon(currentTick)
-                pendingOffticks.append((offTick, chord))
-            if len(pendingOffticks) > 0:
-                if pendingOffticks[0][0] <= currentTick:
-                    (offTick, chord) = pendingOffticks.pop(0)
-                    self._chordoff(offTick, chord)
-            new_frames, good = self.synth.generate(deltaTicks * kFramesPerTick)
-            data_frames = np.append(data_frames, new_frames)
-
-            # get the next beat!
-            lastTick = currentTick
-            nextBeat = (currentTick + kTicksPerBeat)
-            if len(pendingOffticks) > 0:
-                currentTick = min(nextBeat, pendingOffticks[0][0])
-            else:
-                currentTick = nextBeat
-            deltaTicks = currentTick - lastTick
-
-
-            # check if we're done
-            if self.cur_idx >= len(self.chords) and len(pendingOffticks) < 1:
-                # generate final frames for envelope
-                new_frames, good = self.synth.generate(envelope_final_frames)
-                data_frames = np.append(data_frames, new_frames)
-                stopGeneration = True
-
-        return data_frames
-
-    def _get_next_chord(self):
-        chord = self.chords[self.cur_idx]
-        duration = 16
-        self.cur_idx += 1
-        return chord, duration
-
-    # returns off tick
-    def _chordon(self, tick):
-        chord, note_duration = self._get_next_chord()
-        for value in chord:
-            pitch = self.key + value
-            # play note on:
-            self.synth.noteon(self.channel, pitch, int(self.note_velocity))
-        # post note-off:
-        offTick = tick + note_duration * kTicksPerBeat
-        return (offTick, chord)
-
-    def _chordoff(self, tick, chord):
-        for value in chord:
-            pitch = self.key + value
-            self.synth.noteoff(self.channel, pitch)
         

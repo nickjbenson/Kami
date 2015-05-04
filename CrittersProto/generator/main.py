@@ -25,32 +25,32 @@ kOutputChannels = 2
 
 
 
-# get the actual frames
-newBW = boxworm.BoxWorm(1)
-newFrames = newBW.get_frames()
-# newHL = hummingloop.HummingLoop(1)
-# newFrames = newHL.get_frames()
-# newOS = oscilloop.Oscilloop(10)
-# newFrames = newOS.get_frames()
-# newMN = mine.Mine(currentSeed)
-# newFrames = newMN.get_frames()
+# # get the actual frames
+# newBW = boxworm.BoxWorm(1)
+# newFrames = newBW.get_frames()
+# # newHL = hummingloop.HummingLoop(1)
+# # newFrames = newHL.get_frames()
+# # newOS = oscilloop.Oscilloop(10)
+# # newFrames = newOS.get_frames()
+# # newMN = mine.Mine(1)
+# # newFrames = newMN.get_frames()
 
-# Follows code to play things out loud
-# =================================================
+# # Follows code to play things out loud
+# # =================================================
 
-audioPlayer = audio_player.AudioPlayer()
-audioPlayer.queueFramesForPlay(newFrames)
+# audioPlayer = audio_player.AudioPlayer()
+# audioPlayer.queueFramesForPlay(newFrames)
 
-# wait for stream to finish (5)
-while audioPlayer.isActive():
-    time.sleep(0.1)
+# # wait for stream to finish (5)
+# while audioPlayer.isActive():
+#     time.sleep(0.1)
 
-audioPlayer.close()
+# audioPlayer.close()
 
 
 
-# Uncomment for code to write things into wav files
-# =================================================
+# #Uncomment for code to write things into wav files
+# #=================================================
 
 # for currentSeed in xrange(1, 31):
 #     # set up wave file writing

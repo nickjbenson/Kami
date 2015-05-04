@@ -61,7 +61,4 @@ HITS = [48, 45, 42, 35]
 ALT_HITS = {-1:-1, 48:50, 45:47, 42:-1, 35:36}
 
 # Interaction configuration
-FOCUS_SPEED = 100 # velocity ints / second
-MAX_VEL = 50
-MIN_VEL = 50
 NOTE_VELOCITY_MULT = 0.5
