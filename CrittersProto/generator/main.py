@@ -38,14 +38,14 @@ kOutputChannels = 2
 # # Follows code to play things out loud
 # # =================================================
 
-# audioPlayer = audio_player.AudioPlayer()
-# audioPlayer.queueFramesForPlay(newFrames)
-
-# # wait for stream to finish (5)
-# while audioPlayer.isActive():
-#     time.sleep(0.1)
-
-# audioPlayer.close()
+##audioPlayer = audio_player.AudioPlayer()
+##audioPlayer.queueFramesForPlay(newFrames)
+##
+### wait for stream to finish (5)
+##while audioPlayer.isActive():
+##    time.sleep(0.1)
+##
+##audioPlayer.close()
 
 
 
@@ -63,8 +63,7 @@ for currentSeed in xrange(1, 9):
     #newCritter = boxworm.BoxWorm(currentSeed)
     #newCritter = maracaws.Maracaws(currentSeed)
     newCritter = mine.Mine(currentSeed)
-    newFrames = newCritter.get_frames()
-    data = newFrames * np.iinfo(np.int16).max
+    newFrames = newCritter.get_frames()    data = newFrames * np.iinfo(np.int16).max
     data = data.astype(np.int16)
     fmt = 'h'*len(data)
 

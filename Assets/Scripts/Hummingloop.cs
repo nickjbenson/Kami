@@ -103,7 +103,7 @@ public class Hummingloop : Critter {
 		// CAPTURE BEHAVIOR
 		// *****************
 
-		if (distanceToKami <= kami.captureMaxRad && !Captured && BeingCaptured) {
+		if (distanceToKami <= kami.captureRadius && !Captured && BeingCaptured) {
 			FinalizeCapture();
 		}
 
@@ -117,12 +117,12 @@ public class Hummingloop : Critter {
 			// Get a new target inside the capture shell
 			// if refreshTarget was set to true (every few beats or so)
 			if (refreshTarget) {
-				target = kami.getCaptureSpaceTarget("hummingloop");
+				target = transform.position;
 				refreshTarget = false;
 			}
 
 			// If too close to player, move away
-			if (distanceToKami <= kami.captureMinRad/2f) {
+			if (distanceToKami <= kami.turnaroundRad) {
 				target = (transform.position - kami.transform.position) + transform.position;
 			}
 
@@ -133,13 +133,13 @@ public class Hummingloop : Critter {
 			// if refreshTarget was set to true (every few beats or so)
 			if (!leaving) {
 				if (refreshTarget && !BeingCaptured) {
-					target = kami.getRandomTarget ("hummingloop");
+					target = getRandomSpawnLocation();
 					refreshTarget = false;
 				}
 			}
 			
 			// If too close to player, move away
-			if (distanceToKami <= kami.noGoRad && !BeingCaptured) {
+			if (distanceToKami <= kami.turnaroundRad && !BeingCaptured) {
 				target = (transform.position - kami.transform.position) + transform.position;
 			}
 			
@@ -202,5 +202,14 @@ public class Hummingloop : Critter {
 			soundIndex = (soundIndex + 1)%sources.Length;
 			beatsSinceLastPlay = 0;
 		}
+	}
+
+	public Vector3 getRandomSpawnLocation() {
+		float maxSpawnRad = kami.deathRadius - 5f;
+		Vector3 rPos = Random.insideUnitSphere * maxSpawnRad;
+		while (rPos.sqrMagnitude < (kami.turnaroundRad+1) * (kami.turnaroundRad+1)) {
+			rPos = Random.insideUnitSphere * maxSpawnRad; // try again
+		}
+		return rPos;
 	}
 }

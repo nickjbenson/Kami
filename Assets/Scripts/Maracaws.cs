@@ -46,8 +46,22 @@ public class Maracaws : Critter {
 
 		transform.Rotate (0.0f, 0.0f, (float) angularSpeed);
 
+		if (beatsSinceLastPlay >= beatsToLoop) {
+			beatsSinceLastPlay = 0;
+		}
+
+		Light halo = transform.FindChild("Halo").gameObject.GetComponent<Light>();
+
+		if (Input.GetKey ("q")){
+			halo.enabled = !halo.enabled;
+		}
+
+		if (Input.GetKey("z")){
+			halo.color = Color.red;
+		}
+
 		// Play music
-		playSound();
+//		playSound();
 	}
 
 	void playSound() {
