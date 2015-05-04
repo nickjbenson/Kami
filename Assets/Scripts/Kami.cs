@@ -145,32 +145,34 @@ public class Kami : MonoBehaviour {
 		Quaternion rotation;
 		Transform t;
 
+		type = hummingloop;
+		location = new Vector3(90, 90, 90); // temporary
+		rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
+		
 		if (critterName == "hummingloop") {
 			// Spawn Hummingloop
 			type = hummingloop;
-			location = new Vector3(90, 90, 90); // temporary
-			rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
-			t = Instantiate (type, location, rotation) as Transform;
-			t.GetComponent<Critter>().kami = this;
-			t.position = t.GetComponent<Critter>().getRandomSpawnLocation(); // set position
-			t.parent = transform;
 		} else if (critterName == "boxworm") {
 			// Spawn Boxworm
 			type = boxworm;
-			location = new Vector3(90, 90, 90); // temporary
 			rotation = Quaternion.Euler (0, 90, 0);
-			t = Instantiate (type, location, rotation) as Transform;
-			t.GetComponent<Critter>().kami = this;
-			t.position = t.GetComponent<Critter>().getRandomSpawnLocation(); // set position
-			t.parent = transform;
 		} else if (critterName == "maracaw") {
-			print ("Spawn maracaw not implemented");
+			// Spawn Maracaw
+			type = maracaw;
 		} else if (critterName == "mine") {
-			print ("Spawn mine not implemented");
+			// Spawn Mine
+			type = mine;
 		} else if (critterName == "oscilloop") {
 			print ("Spawn oscilloop not implemented");
+			// Spawn Mine
+			type = mine;
 		}
-
+		
+		t = Instantiate (type, location, rotation) as Transform;
+		t.GetComponent<Critter>().kami = this;
+		t.position = t.GetComponent<Critter>().getRandomSpawnLocation(); // set position
+		t.parent = transform;
+		
 	}
 
 	public float getNextBeat() {

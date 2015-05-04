@@ -22,6 +22,10 @@ public class Boxworm : Critter {
 	// LIFE/DEATH VARIABLES
 	public int survivalTime = 32;
 	private bool dying = false;
+	
+	public override void CritterStart() {
+		// Nothing needed.
+	}
 
 	public override AudioClip GetCritterAudio() {
 		int idx = (int) Mathf.Ceil(Random.Range (3, 29));

@@ -14,11 +14,13 @@ public class Hummingloop : Critter {
 	private bool refreshTarget = true; // whether we should get a new target
 	private bool leaving = false; // whether or not the hummingloop is leaving
 
-	// DEATH VARIABLES
+	// LIFE/DEATH VARIABLES
+	public int survivalTime = 24;
 	private bool dying = false;
 
-	// LIFE VARIABLES
-	public int survivalTime = 24;
+	public override void CritterStart() {
+		// Nothing needed.
+	}
 
 	public override AudioClip GetCritterAudio() {
 		int idx = (int)Mathf.Ceil (Random.Range (3, 29));

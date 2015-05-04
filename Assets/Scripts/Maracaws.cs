@@ -5,71 +5,19 @@ public class Maracaws : Critter {
 
 	public double angularSpeed;
 	
-	// BEAT TRACKING / LOOPING VARIABLES
-	public int survivalTime = 24;
-	public int beatsToLoop = 8;
-	private double nextBeatTime;
-	AudioSource[] sources;
-	private int soundIndex = 0;
-	private int beatsSinceLastPlay = 0;
-
-	void Start () {
-		nextBeatTime = kami.getNextBeat ();
-
-		// AUDIO INITIALIZATION
-		// Find audio file to play
-		int idx = (int) Mathf.Ceil(Random.Range (1, 27));
-		// Load audio clip
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/maracaws_output" + idx);
-		// Get AudioSource components (already in Prefab)
-		sources = GetComponents<AudioSource> ();
-		foreach (AudioSource source in sources) {
-			source.clip = clip;
-		}
-		// Start looping on the next available beat
-		beatsSinceLastPlay = beatsToLoop - 1;
-	}
+	// MOVEMENT VARIABLES
+	public float speed = 0.05f; // Movement speed towards target
+	public float rotSpeed = 0.1f; // Rotation speed towards target
+	private Vector3 target; // target destination
+	private bool refreshTarget = true; // whether we should get a new target
+	private bool leaving = false; // whether or not the hummingloop is leaving
 	
-	void Update () {
-		// **********************
-		// BEAT-COUNTING BEHAVIOR
-		// **********************
-		
-		if (nextBeatTime <= AudioSettings.dspTime) {
-			nextBeatTime = kami.getNextBeat ();
-			beatsSinceLastPlay += 1;
-		}
-
-		// *****************
-		// MOVEMENT BEHAVIOR
-		// *****************
-
-		transform.Rotate (0.0f, 0.0f, (float) angularSpeed);
-
-		if (beatsSinceLastPlay >= beatsToLoop) {
-			beatsSinceLastPlay = 0;
-		}
-
-		Light halo = transform.FindChild("Halo").gameObject.GetComponent<Light>();
-
-		if (Input.GetKey ("q")){
-			halo.enabled = !halo.enabled;
-		}
-
-		if (Input.GetKey("z")){
-			halo.color = Color.red;
-		}
-
-		// Play music
-//		playSound();
-	}
-
-	void playSound() {
-		if (beatsSinceLastPlay >= beatsToLoop) {
-			sources[soundIndex].PlayScheduled(nextBeatTime);
-			soundIndex = (soundIndex + 1)%sources.Length;
-			beatsSinceLastPlay = 0;
-		}
+	// LIFE/DEATH VARIABLES
+	public int survivalTime = 24;
+	private bool dying = false;
+	
+	public override void CritterStart() {
+		// Nothing needed.
 	}
 
 	public override AudioClip GetCritterAudio() {
@@ -77,21 +25,89 @@ public class Maracaws : Critter {
 		AudioClip clip = (AudioClip)Resources.Load ("Audio/maracaws_output" + idx);
 		return clip;
 	}
-
+	
 	public override int GetCritterBeatsToLoop() {
 		return 8;
 	}
-
+	
+	// Called once per beat
 	public override void OnCritterBeat() {
-		print ("not yet implemented");
+		survivalTime -= 1;
+		refreshTarget = true;
 	}
+	
+	// Update is called once per frame
+	public override void PostCritterUpdate () {
+		
+		// *****************
+		// MOVEMENT BEHAVIOR
+		// *****************
+		
+		if (BeingPulled || Captured) {
+			// Movement logic while captured or being pulled.
+			leaving = false;
+			
+		} else {
+			// Movement logic while not captured.
+			
+			// While not leaving, get new target whenever
+			// we must refresh it
+			if (!leaving) {
+				if (refreshTarget) {
+					target = getRandomSpawnLocation();
+					refreshTarget = false;
+				}
+			}
+			
+			// If too close to player, turn around
+			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled) {
+				target = (transform.position - kami.transform.position) + transform.position;
+			}
+			
+			// Leave if survivalTime is below zero
+			if (survivalTime <= 0 && !leaving) {
+				leaving = true;
+				// Get a target far away
+				target = Random.onUnitSphere * 200;
+			}
+			
+			// Start dying past the death radius
+			if (DistanceFromKami > kami.deathRadius) {
+				dying = true;
+			}
+			
+			// Smoothly rotate to target
+			// Slerp to facing
+			transform.rotation = Quaternion.Slerp(transform.rotation,
+			                                      Quaternion.LookRotation (target - transform.position),
+			                                      rotSpeed);
+			// Move forward at speed
+			transform.position += transform.forward * speed;
+		}
 
-	public override void PostCritterUpdate() {
-		print ("not yet implemented");
+		// Rotate on axis
+		// TODO: This rotation is overriden when the creature
+		// isn't captured. Either this logic or the logic
+		// above needs to be changed so the maracaws rotates
+		// even when not captured.
+		transform.Rotate (0.0f, 0.0f, (float) angularSpeed);
+		
+		// **************
+		// DEATH BEHAVIOR
+		// **************
+		
+		// For now, just die immediately when dying
+		if (dying) {
+			Destroy(this.gameObject);
+		}
 	}
-
+	
 	public override Vector3 getRandomSpawnLocation() {
-		print ("you just spawned a maracaw right on top of yourself. good job");
-		return Vector3.zero;
+		float maxSpawnRad = kami.deathRadius - 5f;
+		Vector3 rPos = Random.insideUnitSphere * maxSpawnRad;
+		while (rPos.sqrMagnitude < (kami.turnaroundRad+1) * (kami.turnaroundRad+1)) {
+			rPos = Random.insideUnitSphere * maxSpawnRad; // try again
+		}
+		return rPos;
 	}
 }

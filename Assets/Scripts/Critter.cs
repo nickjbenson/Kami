@@ -77,6 +77,8 @@ public abstract class Critter : MonoBehaviour {
 		// Start looping on the next available beat
 		beatsSinceLastPlay = beatsToLoop - 1;
 
+		CritterStart ();
+
 	}
 
 	void Update() {
@@ -159,6 +161,11 @@ public abstract class Critter : MonoBehaviour {
 			beatsSinceLastPlay = 0;
 		}
 	}
+
+	/// <summary>
+	/// Called right after Critter's Start() method.
+	/// </summary>
+	public abstract void CritterStart();
 
 	/// <summary>
 	/// Returns an AudioClip to be played by this critter.

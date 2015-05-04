@@ -137,6 +137,10 @@ public class Oscilloop : Critter {
 			beatsSinceLastPlay = 0;
 		}
 	}
+
+	public override void CritterStart() {
+		print ("not yet implemented");
+	}
 	
 	public override AudioClip GetCritterAudio() {
 		int idx = (int) Mathf.Ceil(Random.Range (1, 10));
