@@ -95,13 +95,11 @@ class BaseGenerator(object):
                 currentTick = nextTick
             deltaTicks = currentTick - lastTick
 
-
             # check if we're done
             if self.cur_idx >= len(currentNotes) and len(pendingOffticks) < 1:
-                # generate final frames for envelope
-                new_frames, good = self.synth.generate(envelope_final_frames)
-                data_frames = np.append(data_frames, new_frames)
-                stopGeneration = True
+                #print np.absolute(new_frames).max()
+                if np.absolute(new_frames).max() <= 0.001:
+                    stopGeneration = True
 
         return data_frames
 
@@ -146,7 +144,7 @@ class BaseGenerator(object):
                 noteVelocity = self.get_note_velocity()
                 self.synth.noteon(self.channel, pitch, int(noteVelocity))
                 # post note-off:
-                off_tick = tick + note_duration * kTicksPerBeat
+                off_tick = tick + note_duration * self.ticksPerNote
                 return (off_tick, pitch)
             return (-1, pitch)
 
