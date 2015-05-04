@@ -112,7 +112,7 @@ public class Boxworm : Critter {
 		// CAPTURE BEHAVIOR
 		// *****************
 		
-		if (distanceToKami <= kami.captureMaxRad && !Captured && BeingCaptured) {
+		if (distanceToKami <= kami.captureRadius && !Captured && BeingCaptured) {
 			FinalizeCapture();
 		}
 
@@ -136,7 +136,7 @@ public class Boxworm : Critter {
 			transform.position += transform.forward * speed;
 			
 			// If too close to player, turn around
-			if (Vector3.Distance (transform.position, kami.transform.position) <= kami.noGoRad
+			if (Vector3.Distance (transform.position, kami.transform.position) <= kami.turnaroundRad
 			    && !BeingCaptured && !Captured) {
 				beatsSinceTurnAround = beatsToTurnAround;
 			}
