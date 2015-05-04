@@ -14,6 +14,7 @@ public abstract class Critter : MonoBehaviour {
 	private bool beingPulled = false;
 	private bool beingPushed = false;
 	private float distanceFromKami = 0f;
+	private float grabbedDistanceFromKami = 0f;
 
 	// BEAT TRACKING / AUDIO LOOPING VARIABLES
 	public int beatsToLoop = 0;
@@ -106,6 +107,8 @@ public abstract class Critter : MonoBehaviour {
 
 		if (DistanceFromKami <= kami.captureRadius && beingPulled) {
 			captured = true;
+		} else if (DistanceFromKami > kami.captureRadius && beingPushed && Captured) {
+			captured = false;
 		}
 
 		// ***********************
@@ -116,15 +119,25 @@ public abstract class Critter : MonoBehaviour {
 			// Move towards the player (unless within grab radius).
 			if (DistanceFromKami > kami.grabRadius) {
 				// this scales the movement with the distance from the player (closer = slower)
-				transform.position += (kami.transform.position - transform.position) * kami.pushPullForce;
+				transform.position += (kami.transform.position - transform.position) * kami.pushPullForce * Time.deltaTime;
 			} else {
 				grabbed = true;
 			}
 		} else if (beingPushed) {
 			// Move away from the player. (again, scales movement with distance from the player)
-			transform.position += (transform.position - kami.transform.position) * kami.pushPullForce;
+			transform.position += (transform.position - kami.transform.position) * kami.pushPullForce * Time.deltaTime;
+			grabbed = false;
 		}
 
+		// ****************
+		// GRABBED BEHAVIOR
+		// ****************
+
+		if (grabbed) {
+			grabbedDistanceFromKami = DistanceFromKami;
+			transform.position = kami.reticle.looker.transform.forward * grabbedDistanceFromKami;
+		}
+		
 		// *************
 		// PLAYING AUDIO
 		// *************

@@ -60,7 +60,7 @@ public class Hummingloop : Critter {
 			}
 			
 			// If too close to player, turn around
-			if (DistanceFromKami <= kami.turnaroundRad) {
+			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled) {
 				target = (transform.position - kami.transform.position) + transform.position;
 			}
 			
@@ -75,15 +75,15 @@ public class Hummingloop : Critter {
 			if (DistanceFromKami > kami.deathRadius) {
 				dying = true;
 			}
+
+			// Smoothly rotate to target
+			// Slerp to facing
+			transform.rotation = Quaternion.Slerp(transform.rotation,
+			                                      Quaternion.LookRotation (target - transform.position),
+			                                      rotSpeed);
+			// Move forward at speed
+			transform.position += transform.forward * speed;
 		}
-		
-		// Smoothly rotate to target
-		// Slerp to facing
-		transform.rotation = Quaternion.Slerp(transform.rotation,
-		                                      Quaternion.LookRotation (target - transform.position),
-		                                      rotSpeed);
-		// Move forward at speed
-		transform.position += transform.forward * speed;
 
 		// **************
 		// DEATH BEHAVIOR

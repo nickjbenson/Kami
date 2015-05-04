@@ -106,7 +106,16 @@ public class Kami : MonoBehaviour {
 			spawnCritter("oscilloop");
 		}
 
+		// Set the focus based on reticle's target
+		Transform target = reticle.Target;
+		if (target != null) {
+			focus = target.parent.GetComponent<Critter>();
+		} else {
+			focus = null;
+		}
+
 		// Pulling
+		print (focus);
 		if (Input.GetKey (pullKey) || leapPull) {
 			if (focus != null) {
 				pulling = true;
@@ -190,10 +199,8 @@ public class Kami : MonoBehaviour {
 		return 0;
 	}
 
-	// deprecated. use getPushPullState.
-	// backwards-compatibility reasons only, delete soon.
-	public int getFocusState(Critter critter) {
-		return getPushPullState (critter);
+	public bool getFocused(Critter critter) {
+		return critter == focus;
 	}
 
 	public void RegisterCapture(Critter critter) {
