@@ -1,9 +1,8 @@
 #####################################################################
 #
-# hummingloop.py
+# BaseGenerator.py
 #
-# Copyright (c) 2015, Nick Benson
-# Modifications by benchan
+# benchan
 #
 # Released under the MIT License (http://opensource.org/licenses/MIT)
 #
@@ -15,21 +14,31 @@ from synth import Synth
 
 # todo: move into global file
 kFramesPerSecond = 44100
-kBeatsPerSecond = 8
+# 120 beats per minute = 2 beats per second
+kBeatsPerSecond = 2
 kTicksPerBeat = 480
-kFramesPerTick = kFramesPerSecond / (kBeatsPerSecond * kTicksPerBeat)
+kFramesPerTick = int(kFramesPerSecond / (kBeatsPerSecond * kTicksPerBeat))
+# can be fractional
+kDefaultNumNotesPerBeat = 4
 
 # To subclass, make sure to call super.constructor
 # before your own settings.
+# Extend this class as necessary here, e.g. to allow for
+# variable Beats per second, or just tell me (benchan)
+# to do that.
 class BaseGenerator(object):
+
     def __init__(self, seed):
         random.seed(seed)
 
         self.synth = Synth('../FluidR3_GM.sf2')
         self.set_cpb(10, 128, 0)
         self.cur_idx = 0
+        self.set_num_notes_per_beat(kDefaultNumNotesPerBeat)
 
     # Subclasses should override this
+    # can return an array of scalars, or an
+    # array of chords, or a mixture
     def get_notes_list(self):
         return []
 
@@ -44,6 +53,9 @@ class BaseGenerator(object):
 
     def set_cc(self, channel, control, value):
         self.synth.cc(channel, control, value)
+
+    def set_num_notes_per_beat(self, notesPerBeat):
+        self.ticksPerNote = int(kTicksPerBeat / notesPerBeat)
 
     # Internal method
     def get_frames(self):
@@ -61,7 +73,7 @@ class BaseGenerator(object):
         currentNotes = self.get_notes_list()
 
         while stopGeneration is not True:
-            if self.cur_idx < len(currentNotes) and currentTick % kTicksPerBeat == 0:
+            if self.cur_idx < len(currentNotes) and currentTick % self.ticksPerNote == 0:
                 # do the next _note_on
                 (offTick, pitch) = self._noteon(currentTick)
                 if offTick > 0:
@@ -75,11 +87,12 @@ class BaseGenerator(object):
 
             # get the next beat!
             lastTick = currentTick
-            nextBeat = ((currentTick + kTicksPerBeat) / kTicksPerBeat) * kTicksPerBeat
+            tickOfNextNote = (currentTick + self.ticksPerNote)
+            nextTick = tickOfNextNote
             if len(pendingOffticks) > 0:
-                currentTick = min(nextBeat, pendingOffticks[0][0])
+                currentTick = min(nextTick, pendingOffticks[0][0])
             else:
-                currentTick = nextBeat
+                currentTick = nextTick
             deltaTicks = currentTick - lastTick
 
 
@@ -92,9 +105,12 @@ class BaseGenerator(object):
 
         return data_frames
 
-    def _get_next_pitch(self):
+    # noteset is either a single midi pitch or
+    # a list of midi pitches, based on the implementation
+    # of get_notes_list
+    def _get_next_noteset(self):
         currentNotes = self.get_notes_list()
-        pitch = currentNotes[self.cur_idx]
+        noteset = currentNotes[self.cur_idx]
 
         notes_len = len(currentNotes)
 
@@ -109,22 +125,38 @@ class BaseGenerator(object):
         # advance index
         self.cur_idx += 1
 
-        return pitch, duration
+        return noteset, duration
 
     # returns off tick
     def _noteon(self, tick):
-        pitch, note_duration = self._get_next_pitch()
-        if pitch not in [0, -1]:
-            # play note on:
-            noteVelocity = self.get_note_velocity()
-            self.synth.noteon(self.channel, pitch, int(noteVelocity))
+        noteset, note_duration = self._get_next_noteset()
+        if isinstance(noteset, list):
+            for value in noteset:
+                pitch = self.key + value
+                # play note on:
+                noteVelocity = self.get_note_velocity()
+                self.synth.noteon(self.channel, pitch, int(noteVelocity))
             # post note-off:
             off_tick = tick + note_duration * kTicksPerBeat
-            return (off_tick, pitch)
-        return (-1, pitch)
+            return (off_tick, noteset)
+        else:
+            pitch = noteset
+            if pitch not in [0, -1]:
+                # play note on:
+                noteVelocity = self.get_note_velocity()
+                self.synth.noteon(self.channel, pitch, int(noteVelocity))
+                # post note-off:
+                off_tick = tick + note_duration * kTicksPerBeat
+                return (off_tick, pitch)
+            return (-1, pitch)
 
-    def _noteoff(self, tick, pitch):
-        self.synth.noteoff(self.channel, pitch)
+    def _noteoff(self, tick, noteset):
+        if isinstance(noteset, list):
+            for value in noteset:
+                pitch = self.key + value
+                self.synth.noteoff(self.channel, pitch)
+        else:
+            self.synth.noteoff(self.channel, noteset)
 
 
 

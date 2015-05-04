@@ -25,7 +25,6 @@ kSamplingRate = 44100
 kOutputChannels = 2
 
 
-
 # get the actual frames
 
 # newCritter = boxworm.BoxWorm(1)
@@ -35,18 +34,17 @@ kOutputChannels = 2
 newCritter = maracaws.Maracaws(15)
 newFrames = newCritter.get_frames()
 
-# Follows code to play things out loud
-# =================================================
+# # Follows code to play things out loud
+# # =================================================
 
-audioPlayer = audio_player.AudioPlayer()
-audioPlayer.queueFramesForPlay(newFrames)
+# audioPlayer = audio_player.AudioPlayer()
+# audioPlayer.queueFramesForPlay(newFrames)
 
-# wait for stream to finish (5)
-while audioPlayer.isActive():
-    time.sleep(0.1)
+# # wait for stream to finish (5)
+# while audioPlayer.isActive():
+#     time.sleep(0.1)
 
-audioPlayer.close()
-
+# audioPlayer.close()
 
 
 # Uncomment for code to write things into wav files
