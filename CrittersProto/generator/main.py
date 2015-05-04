@@ -12,6 +12,7 @@ sys.path.append('../prototype/common')
 import hummingloop
 import boxworm
 import mine
+import maracaws
 import oscilloop
 import wave
 import numpy as np
@@ -26,14 +27,13 @@ kOutputChannels = 2
 
 
 # get the actual frames
-newBW = boxworm.BoxWorm(1)
-newFrames = newBW.get_frames()
-# newHL = hummingloop.HummingLoop(1)
-# newFrames = newHL.get_frames()
-# newOS = oscilloop.Oscilloop(10)
-# newFrames = newOS.get_frames()
-# newMN = mine.Mine(currentSeed)
-# newFrames = newMN.get_frames()
+
+# newCritter = boxworm.BoxWorm(1)
+# newCritter = hummingloop.HummingLoop(1)
+# newCritter = oscilloop.Oscilloop(10)
+# newCritter = mine.Mine(15)
+newCritter = maracaws.Maracaws(15)
+newFrames = newCritter.get_frames()
 
 # Follows code to play things out loud
 # =================================================
@@ -52,21 +52,19 @@ audioPlayer.close()
 # Uncomment for code to write things into wav files
 # =================================================
 #
-# for currentSeed in xrange(1, 31):
-#     # set up wave file writing
-#     waver = wave.open("wav/box_output" + str(currentSeed) + ".wav", 'wb')
-#     waver.setnchannels(kOutputChannels) #kOutputChannels
-#     waver.setsampwidth(2) # let's convert things into 16 bit integer format
-#     waver.setframerate(kSamplingRate)
-
-#     # newHL = hummingloop.HummingLoop(currentSeed)
-#     # newFrames = newHL.get_frames()
-#     newBW = boxworm.BoxWorm(currentSeed)
-#     newFrames = newBW.get_frames()
-#     data = newFrames * np.iinfo(np.int16).max
-#     data = data.astype(np.int16)
-#     fmt = 'h'*len(data)
-
-#     packedData = struct.pack(fmt, *data)
-#     waver.writeframes(packedData)
-#     waver.close()
+##for currentSeed in xrange(1, 31):
+##    # set up wave file writing
+##    waver = wave.open("maracaws_output" + str(currentSeed) + ".wav", 'wb')
+##    waver.setnchannels(kOutputChannels) #kOutputChannels
+##    waver.setsampwidth(2) # let's convert things into 16 bit integer format
+##    waver.setframerate(kSamplingRate)
+##
+##    newCritter = maracaws.Maracaws(currentSeed)
+##    newFrames = newCritter.get_frames()
+##    data = newFrames * np.iinfo(np.int16).max
+##    data = data.astype(np.int16)
+##    fmt = 'h'*len(data)
+##
+##    packedData = struct.pack(fmt, *data)
+##    waver.writeframes(packedData)
+##    waver.close()

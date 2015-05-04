@@ -9,7 +9,7 @@ public class CameraController : MonoBehaviour {
 		float y = Input.GetAxis ("Horizontal");
 		float x = -Input.GetAxis ("Vertical");
 
-		transform.Rotate(x * angularSpeed * Time.deltaTime, 0.0f, 0.0f, Space.Self);
+		transform.Rotate (x * angularSpeed * Time.deltaTime, 0.0f, 0.0f, Space.Self);
 		transform.Rotate (0.0f, y * angularSpeed * Time.deltaTime, 0.0f, Space.World);
 	}
 
