@@ -90,7 +90,12 @@ public class Maracaws : Critter {
 		// isn't captured. Either this logic or the logic
 		// above needs to be changed so the maracaws rotates
 		// even when not captured.
-		transform.Rotate (0.0f, 0.0f, (float) angularSpeed);
+		// *****************
+		// INTERNAL MOVEMENT
+		// *****************
+
+		transform.Rotate (0.0f, 0.0f, 360f / (float) (GetCritterBeatsToLoop () * angularSpeed));
+		// makes one full cycle per beat
 		
 		// **************
 		// DEATH BEHAVIOR

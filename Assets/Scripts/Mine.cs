@@ -3,32 +3,19 @@ using System.Collections;
 
 public class Mine : Critter {
 
-	float tempo; //time per beat
+	int expanding = 2; //0|1 if expanding, 2|3 if contracting
 
-	bool expanding = true; //if false, contracting
-	Vector3 minSphere;
-	Vector3 maxSphere;
-	double prevTime = 0; //the previous time some change in state happened
-	
-	// MOVEMENT VARIABLES (copied from hummingloop, for hummingloop-copied movement)
-	public float speed = 0.05f; // Movement speed towards target
-	public float rotSpeed = 0.1f; // Rotation speed towards target
+	// MOVEMENT VARIABLES
+	public float speed = 0.003f; // Movement speed towards target
 	private Vector3 target; // target destination
 	private bool refreshTarget = true; // whether we should get a new target
-	private bool leaving = false; // whether or not the hummingloop is leaving
+	private bool leaving = false; // whether or not the mine is leaving
 	
 	// LIFE/DEATH VARIABLES
 	public int survivalTime = 24;
 	private bool dying = false;
 
 	public override void CritterStart () {
-		tempo = kami.globalTempo; //for now, this is constant, so can be set once
-		prevTime = AudioSettings.dspTime;
-
-		float minR = 1;
-		float maxR = 1.2f;
-		minSphere = new Vector3 (minR, minR, minR);
-		maxSphere = new Vector3 (maxR, maxR, maxR);
 	}
 	
 	public override AudioClip GetCritterAudio() {
@@ -43,7 +30,7 @@ public class Mine : Critter {
 	
 	public override void OnCritterBeat() {
 		survivalTime -= 1;
-		refreshTarget = true;
+		expanding = (expanding + 1)%4; //because I want it to change every two beats
 	}
 	
 	public override void PostCritterUpdate() {
@@ -51,8 +38,6 @@ public class Mine : Critter {
 		// *****************
 		// MOVEMENT BEHAVIOR
 		// *****************
-
-		// COPIED FROM HUMMINGLOOP.
 		
 		if (BeingPulled || Captured) {
 			// Movement logic while captured or being pulled.
@@ -62,6 +47,10 @@ public class Mine : Critter {
 			
 			// While not leaving, get new target whenever
 			// we must refresh it
+			if (Vector3.Distance(transform.position, target) < 0.1){
+				refreshTarget = true;
+			}
+
 			if (!leaving) {
 				if (refreshTarget) {
 					target = getRandomSpawnLocation();
@@ -79,18 +68,14 @@ public class Mine : Critter {
 				leaving = true;
 				// Get a target far away
 				target = Random.onUnitSphere * 200;
+				speed = 0.05f;
 			}
 			
 			// Start dying past the death radius
 			if (DistanceFromKami > kami.deathRadius) {
 				dying = true;
 			}
-			
-			// Smoothly rotate to target
-			// Slerp to facing
-			transform.rotation = Quaternion.Slerp(transform.rotation,
-			                                      Quaternion.LookRotation (target - transform.position),
-			                                      rotSpeed);
+
 			// Move forward at speed
 			transform.position += transform.forward * speed;
 		}
@@ -99,18 +84,10 @@ public class Mine : Critter {
 		// EXPANSION BEHAVIOR
 		// ******************
 
-		// print (prevTime)
-		double dt = (AudioSettings.dspTime - prevTime);
-		float frac = (float)dt / (tempo * beatsToLoop / 2.0f);
-		if (expanding) {
-			transform.localScale = Vector3.Lerp (minSphere, maxSphere, frac);
+		if (expanding == 0 || expanding == 1) {
+			transform.localScale += Vector3.one/200.0f;
 		} else {
-			transform.localScale = Vector3.Lerp (maxSphere, minSphere, frac);
-		}
-		
-		if (frac >= 1) {
-			expanding = !expanding;
-			prevTime += tempo * beatsToLoop / 2.0f;
+			transform.localScale -= Vector3.one/200.0f;
 		}
 		
 		// **************
