@@ -30,6 +30,9 @@ class HummingLoop(BaseGenerator):
     def get_note_velocity(self):
         return self.note_velocity
 
+    # Used by Main
+    def get_config(self):
+        return " ".join(str(note) for note in self.notes)
 
 
 

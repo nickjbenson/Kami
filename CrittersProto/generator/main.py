@@ -39,40 +39,54 @@ kOutputChannels = 2
 # Follows code to play things out loud
 # =================================================
 
-audioPlayer = audio_player.AudioPlayer()
+# audioPlayer = audio_player.AudioPlayer()
 
 
-newCritter = swarp.Swarp(currentSeed)
-newFrames = newCritter.get_frames()
-audioPlayer.queueFramesForPlay(newFrames)
+# newCritter = swarp.Swarp(1)
+# newFrames = newCritter.get_frames()
+# audioPlayer.queueFramesForPlay(newFrames)
 
-# wait for stream to finish (5)
-while audioPlayer.isActive():
-   time.sleep(0.1)
+# # wait for stream to finish (5)
+# while audioPlayer.isActive():
+#    time.sleep(0.1)
 
-audioPlayer.close()
+# audioPlayer.close()
 
 
 
-# #Uncomment for code to write things into wav files
-# #=================================================
+#Uncomment for code to write things into wav files
+#=================================================
 
-# for currentSeed in xrange(1, 9):
-#     # set up wave file writing
-#     waver = wave.open("wav/mine_output" + str(currentSeed) + ".wav", 'wb')
-#     waver.setnchannels(kOutputChannels) #kOutputChannels
-#     waver.setsampwidth(2) # let's convert things into 16 bit integer format
-#     waver.setframerate(kSamplingRate)
+for currentSeed in xrange(1, 31):
+    # # set up wave file writing
+    # waver = wave.open("wav/box_output" + str(currentSeed) + ".wav", 'wb')
+    # waver.setnchannels(kOutputChannels) #kOutputChannels
+    # waver.setsampwidth(2) # let's convert things into 16 bit integer format
+    # waver.setframerate(kSamplingRate)
 
-#     #newCritter = hummingloop.HummingLoop(currentSeed)
-#     #newCritter = boxworm.BoxWorm(currentSeed)
-#     #newCritter = maracaws.Maracaws(currentSeed)
-#     newCritter = mine.Mine(currentSeed)
-#     newFrames = newCritter.get_frames()    data = newFrames * np.iinfo(np.int16).max
-#     data = data.astype(np.int16)
-#     fmt = 'h'*len(data)
+    # #newCritter = hummingloop.HummingLoop(currentSeed)
+    # newCritter = boxworm.BoxWorm(currentSeed)
+    # #newCritter = maracaws.Maracaws(currentSeed)
+    # #newCritter = mine.Mine(currentSeed)
+    # newFrames = newCritter.get_frames()    data = newFrames * np.iinfo(np.int16).max
+    # data = data.astype(np.int16)
+    # fmt = 'h'*len(data)
 
-#     packedData = struct.pack(fmt, *data)
-#     waver.writeframes(packedData)
-#     waver.close()
+    # packedData = struct.pack(fmt, *data)
+    # waver.writeframes(packedData)
+    # waver.close()
+
+    #newCritter = boxworm.BoxWorm(currentSeed)
+    #newCritter = hummingloop.HummingLoop(currentSeed)
+    newCritter = maracaws.Maracaws(currentSeed)
+
+    # Output oscillation configuration file.
+    # This will be used by Unity to synchronize
+    # the critter's motion with the sound of the
+    # .wav file.
+    config_file = open("wav/maracaws_output" + str(currentSeed) + "_config.txt", "wb")
+    config_contents = str(newCritter.get_config()) + "\n"
+    config_file.write(config_contents)
+    config_file.close()
+    print "Config file written and closed."
 

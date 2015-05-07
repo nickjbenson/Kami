@@ -38,6 +38,10 @@ class Maracaws(object):
 
         self.cur_idx = 0
 
+    # Used by Main
+    def get_config(self):
+        return " ".join(str(note) for note in self.notes)
+        
     def get_frames(self):
         # Actual script
         # frames
