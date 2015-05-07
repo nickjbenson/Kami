@@ -31,4 +31,3 @@ class BoxWorm(BaseGenerator):
 
 
 
-

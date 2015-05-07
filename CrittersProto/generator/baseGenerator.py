@@ -162,6 +162,11 @@ class BaseGenerator(object):
             self.synth.noteoff(self.channel, noteset)
 
 
+    # Used by Main
+    def get_config(self):
+        return " ".join(str(note) for note in self.get_notes_list())
+
+
 
 
 
