@@ -38,6 +38,17 @@ class Maracaws(object):
 
         self.cur_idx = 0
 
+    def get_config(self): #list of times when a new note is played (in %age, not absolute)
+        times = [0]
+        for i in self.notes:
+            if i == 0:
+                times[-1] += 100
+            else:
+                times.append( 100 )
+        total = sum(times)/100.0
+        times /= total
+        return times
+
     def get_frames(self):
         # Actual script
         # frames
@@ -65,7 +76,7 @@ class Maracaws(object):
 
             # get the next beat!
             lastTick = currentTick
-            nextBeat = ((currentTick + kTicksPerBeat) / kTicksPerBeat) * kTicksPerBeat
+            nextBeat = currentTick + kTicksPerBeat
             if len(pendingOffticks) > 0:
                 currentTick = min(nextBeat, pendingOffticks[0][0])
             else:
@@ -84,7 +95,7 @@ class Maracaws(object):
 
     def _get_next_pitch(self):
         on = self.notes[self.cur_idx]
-        duration = 1
+        duration = 1 #in beats
         pitch = 0
         if on == 1:
             pitch = self.toplay

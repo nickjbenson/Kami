@@ -27,7 +27,7 @@ public class Maracaws : Critter {
 	}
 	
 	public override int GetCritterBeatsToLoop() {
-		return 8;
+		return 4;
 	}
 	
 	// Called once per beat
@@ -46,44 +46,44 @@ public class Maracaws : Critter {
 		if (BeingPulled || Captured) {
 			// Movement logic while captured or being pulled.
 			leaving = false;
-			
-		} else {
-			// Movement logic while not captured.
-			
-			// While not leaving, get new target whenever
-			// we must refresh it
-			if (!leaving) {
-				if (refreshTarget) {
-					target = getRandomSpawnLocation();
-					refreshTarget = false;
-				}
-			}
-			
-			// If too close to player, turn around
-			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled && survivalTime > 0) {
-				target = (transform.position - kami.transform.position) + transform.position;
-			}
-			
-			// Leave if survivalTime is below zero
-			if (survivalTime <= 0 && !leaving) {
-				leaving = true;
-				// Get a target far away
-				target = Random.onUnitSphere * 200;
-			}
-			
-			// Start dying past the death radius
-			if (DistanceFromKami > kami.deathRadius) {
-				dying = true;
-			}
-			
-			// Smoothly rotate to target
-			// Slerp to facing
-			transform.rotation = Quaternion.Slerp(transform.rotation,
-			                                      Quaternion.LookRotation (target - transform.position),
-			                                      rotSpeed);
-			// Move forward at speed
-			transform.position += transform.forward * speed;
-		}
+		}	
+//		} else {
+//			// Movement logic while not captured.
+//			
+//			// While not leaving, get new target whenever
+//			// we must refresh it
+//			if (!leaving) {
+//				if (refreshTarget) {
+//					target = getRandomSpawnLocation();
+//					refreshTarget = false;
+//				}
+//			}
+//			
+//			// If too close to player, turn around
+//			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled && survivalTime > 0) {
+//				target = (transform.position - kami.transform.position) + transform.position;
+//			}
+//			
+//			// Leave if survivalTime is below zero
+//			if (survivalTime <= 0 && !leaving) {
+//				leaving = true;
+//				// Get a target far away
+//				target = Random.onUnitSphere * 200;
+//			}
+//			
+//			// Start dying past the death radius
+//			if (DistanceFromKami > kami.deathRadius) {
+//				dying = true;
+//			}
+//			
+//			// Smoothly rotate to target
+//			// Slerp to facing
+//			transform.rotation = Quaternion.Slerp(transform.rotation,
+//			                                      Quaternion.LookRotation (target - transform.position),
+//			                                      rotSpeed);
+//			// Move forward at speed
+//			transform.position += transform.forward * speed;
+//		}
 
 		// Rotate on axis
 		// TODO: This rotation is overriden when the creature

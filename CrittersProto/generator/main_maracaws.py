@@ -54,19 +54,33 @@ kOutputChannels = 2
 
 for currentSeed in xrange(1, 9):
     # set up wave file writing
-    waver = wave.open("wav/mine_output" + str(currentSeed) + ".wav", 'wb')
-    waver.setnchannels(kOutputChannels) #kOutputChannels
-    waver.setsampwidth(2) # let's convert things into 16 bit integer format
-    waver.setframerate(kSamplingRate)
+##    waver = wave.open("wav/maracaws_output" + str(currentSeed) + ".wav", 'wb')
+##    waver.setnchannels(kOutputChannels) #kOutputChannels
+##    waver.setsampwidth(2) # let's convert things into 16 bit integer format
+##    waver.setframerate(kSamplingRate)
 
     #newCritter = hummingloop.HummingLoop(currentSeed)
     #newCritter = boxworm.BoxWorm(currentSeed)
-    #newCritter = maracaws.Maracaws(currentSeed)
-    newCritter = mine.Mine(currentSeed)
-    newFrames = newCritter.get_frames()    data = newFrames * np.iinfo(np.int16).max
-    data = data.astype(np.int16)
-    fmt = 'h'*len(data)
+    newCritter = maracaws.Maracaws(currentSeed)
+    #newCritter = mine.Mine(currentSeed)
+##    newFrames = newCritter.get_frames()
+##    data = newFrames * np.iinfo(np.int16).max
+##    data = data.astype(np.int16)
+##    fmt = 'h'*len(data)
+##
+##    packedData = struct.pack(fmt, *data)
+##    waver.writeframes(packedData)
+##    waver.close()
 
-    packedData = struct.pack(fmt, *data)
-    waver.writeframes(packedData)
-    waver.close()
+#Uncomment for code to write config files
+#========================================
+    # This will be used by Unity to synchronize
+    # the critter's motion with the sound of the
+    # .wav file.
+    config_file = open("../wav/maracaws_output" + str(currentSeed) + "_config.txt", "wb")
+    config_contents = ""
+    for time in newCritter.get_config():
+        config_contents += str(time) + "\t"
+    config_file.write(config_contents)
+    config_file.close()
+    print "Config file written and closed."
