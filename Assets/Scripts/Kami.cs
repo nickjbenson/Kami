@@ -52,6 +52,9 @@ public class Kami : MonoBehaviour {
 	// Hummingloop
 	private AudioClip[] hummingloopAudio;
 	private Hummingloop.HummingloopConfig[] hummingloopConfigs;
+	// Boxworm
+	private AudioClip[] boxwormAudio;
+	private Boxworm.BoxwormConfig[] boxwormConfigs;
 
 	// Oculus Reticle
 	public OculusReticle reticle;
@@ -81,6 +84,8 @@ public class Kami : MonoBehaviour {
 		// ************************************
 		// LOADING AUDIO & CONFIGURATION ASSETS
 		// ************************************
+
+		// HUMMINGLOOPS (aka Honkyloops)
 
 		// Hummingloop audio
 		print ("Loading hummingloop audio.");
@@ -116,6 +121,55 @@ public class Kami : MonoBehaviour {
 			hummingloopConfigs[i] = config;
 		}
 		print ("Done loading hummingloop configs.");
+
+		// BOXWORMS (aka Bevelworms)
+
+		// Boxworm audio
+		print ("Loading boxworm audio.");
+		boxwormAudio = new AudioClip[30];
+		for (int i = 3; i < 29; i++) {
+			boxwormAudio[i] = (AudioClip)Resources.Load ("Audio/box_output" + i);
+		}
+		print ("Done loading boxworm audio.");
+
+		// Boxworm config
+		print ("Loading boxworm configs.");
+		boxwormConfigs = new Boxworm.BoxwormConfig[30];
+		for (int i = 3; i < 29; i++) {
+			Boxworm.BoxwormConfig config = new Boxworm.BoxwormConfig();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/box_output" + i + "_config");
+			var result = textConfig.text.Split (' ');
+			int j = 0;
+			int hit = 0;
+			config.hits = new int[result.Length];
+			foreach (string pitchStr in result) {
+				hit = int.Parse (pitchStr);
+				// possible hits: {-1:-1, 48:50, 45:47, 42:-1, 35:36}
+				int hitType = 0;
+				switch (hit) {
+					case 48:
+						hitType = 1; break;
+					case 50:
+						hitType = 1; break;
+					case 45:
+						hitType = 2; break;
+					case 47:
+						hitType = 2; break;
+					case 42:
+						hitType = 3; break;
+					case 35:
+						hitType = 4; break;
+					case 36:
+						hitType = 4; break;
+					default:
+						hitType = -1; break;
+				}
+				config.hits[j] = hitType;
+				j++;
+			}
+			boxwormConfigs[i] = config;
+		}
+		print ("Done loading boxworm configs.");
 	}
 
 	void FixedUpdate(){
@@ -301,6 +355,13 @@ public class Kami : MonoBehaviour {
 	}
 	public Hummingloop.HummingloopConfig GetHummingloopConfig(int i) {
 		return hummingloopConfigs [i];
+	}
+
+	public AudioClip GetBoxwormAudio(int i) {
+		return boxwormAudio [i];
+	}
+	public Boxworm.BoxwormConfig GetBoxwormConfig(int i) {
+		return boxwormConfigs [i];
 	}
 	
 }

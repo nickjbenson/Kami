@@ -3,14 +3,13 @@ using System.Collections;
 
 public class Hummingloop : Critter {
 
-	public int hummingloop_idx = 0;
-
 	// OBJECT HOOKS
 	public Transform body;
 	public Transform leftWing;
 	public Transform rightWing;
 
 	// ANIMATION VARIABLES
+	public int hummingloop_idx = 0;
 	public int pitchIndexOffset = 0;
 	public float timeConstant = 1f;
 	public float wingAngleToBodyFloatRatio = 0.001f;

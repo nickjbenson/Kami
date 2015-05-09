@@ -80,8 +80,6 @@ public abstract class Critter : MonoBehaviour {
 			return LivingTime - loopTime;
 		}
 	}
-
-	// TIME TRACKING TAKE 3
 	public double KamiTime {
 		get {
 			return kami.DSPTime;
@@ -149,7 +147,7 @@ public abstract class Critter : MonoBehaviour {
 		// **************
 		// SELECTION HALO
 		// **************
-		halo = transform.FindChild("Halo").gameObject.GetComponent<Light>();
+		halo = transform.FindChild("Halo").GetComponent<Light>();
 
 		CritterStart ();
 	}
