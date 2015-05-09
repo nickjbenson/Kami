@@ -30,7 +30,7 @@ public class OculusReticle : MonoBehaviour {
 		// RayCast logic. Sets the current target based on raycast,
 		// then moves the reticle to the target.
 		RaycastHit hit;
-		int layerMask = 1 << 2;
+		int layerMask = (1 << 8 | 1 << 2);
 		layerMask = ~layerMask;
 		if (Physics.Raycast (looker.position, looker.forward, out hit, maxDistance, layerMask)) {
 			currentTarget = hit.transform;
