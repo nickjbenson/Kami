@@ -195,9 +195,9 @@ public class Kami : MonoBehaviour {
 		
 		// Mine audio
 		print ("Loading mine audio.");
-		maracawsAudio = new AudioClip[9];
+		mineAudio = new AudioClip[9];
 		for (int i = 1; i <= 8; i++) {
-			maracawsAudio [i] = (AudioClip)Resources.Load ("Audio/mine_output" + i);
+			mineAudio [i] = (AudioClip)Resources.Load ("Audio/mine_output" + i);
 		}
 		print ("Done loading mine audio.");
 	}
