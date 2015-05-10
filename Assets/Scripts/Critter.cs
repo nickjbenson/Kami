@@ -21,11 +21,22 @@ public abstract class Critter : MonoBehaviour {
 	private float grabbedDistanceFromKami = 0f;
 
 	// BEAT TRACKING / AUDIO LOOPING VARIABLES
-	public int beatsToLoop = 0;
-	private double nextBeatTime;
+	public double initTime = 0;
+	public double myTime = 0;
+	public double nextMeasure;
+	public double nextBeat;
+	public double nextSixteenth;
+	public int sixteenthCount = -1;
+	public int beatCount = -1;
+	public int beatCountForLooping = 0;
+	private bool startPlayingScheduled = false;
+	private bool startedPlaying = false;
+	public int beatsToLoop;
+	protected double loopTime;
+	public float timeSinceLastLoop = 0;
+	
 	AudioSource[] sources;
 	private int soundIndex = 0;
-	private int beatsSinceLastPlay = 0;
 	
 	public bool Captured {
 		get {
@@ -58,17 +69,72 @@ public abstract class Critter : MonoBehaviour {
 			return distanceFromKami - critterRadius;
 		}
 	}
+	
+	public double LivingTime {
+		get {
+			return myTime;
+		}
+	}
+	public double TimeSinceLoop {
+		get {
+			return LivingTime - loopTime;
+		}
+	}
+	public double KamiTime {
+		get {
+			return kami.DSPTime;
+		}
+	}
+	public double MeasureLength {
+		get {
+			return kami.globalTempo * 4;
+		}
+	}
+	public double BeatLength {
+		get {
+			return kami.globalTempo;
+		}
+	}
+	public double SixteenthLength {
+		get {
+			return kami.globalTempo / 8.0;
+		}
+	}
+	public bool StartedPlaying {
+		get {
+			return startedPlaying;
+		}
+	}
 
 	void Start() {
+
+		// Animation time initialization.
+		initTime = (float)AudioSettings.dspTime;
+
+		// ***************************
+		// AUDIO TIMING INITIALIZATION
+		// ***************************
+		
+		initTime = KamiTime;
+		
+		nextBeat = kami.NextBeat - initTime;
+		nextSixteenth = kami.NextSixteenth - initTime;
+		nextMeasure = kami.NextMeasure - initTime;
+		
+		int numSixteenthsLeft = (int)(nextBeat / SixteenthLength);
+		//		print ("This implies there are " + numSixteenthsLeft + " sixteenths left until the beat.");
+		sixteenthCount = 7 - numSixteenthsLeft;
+		int numBeatsLeft = (int)(nextMeasure / BeatLength);
+		//		print ("It also implies that there are " + numBeatsLeft + " beats left until the measure.");
+		beatCount = 3 - numBeatsLeft;
 
 		// ********************
 		// AUDIO INITIALIZATION
 		// ********************
 
 		// Beat initialization
-		nextBeatTime = kami.getNextBeat ();
 		beatsToLoop = GetCritterBeatsToLoop ();
-		
+
 		// Get AudioClip from subclass
 		AudioClip clip = GetCritterAudio ();
 		
@@ -78,13 +144,10 @@ public abstract class Critter : MonoBehaviour {
 			source.clip = clip;
 		}
 		
-		// Start looping on the next available beat
-		beatsSinceLastPlay = beatsToLoop - 1;
-		
 		// **************
 		// SELECTION HALO
 		// **************
-		halo = transform.FindChild("Halo").gameObject.GetComponent<Light>();
+		halo = transform.FindChild("Halo").GetComponent<Light>();
 
 		CritterStart ();
 	}
@@ -103,12 +166,70 @@ public abstract class Critter : MonoBehaviour {
 		// **********************
 		// BEAT-COUNTING BEHAVIOR
 		// **********************
+
+		myTime = KamiTime - initTime;
 		
-		// Get a new target every beat
-		if (nextBeatTime <= AudioSettings.dspTime) {
-			nextBeatTime = kami.getNextBeat();
-			beatsSinceLastPlay += 1;
-			OnCritterBeat();
+		if (myTime >= nextSixteenth) {
+			nextSixteenth += SixteenthLength;
+			sixteenthCount += 1;
+
+			// Sixteenth event.
+			OnCritterSixteenth();
+			
+			if (!startPlayingScheduled
+			    	&& ((beatCount + 1) % 4 == 0) // the beat before the next measure
+			    	&& ((sixteenthCount + 4) % 8 == 0)) { // halfway into the beat
+
+				sources[soundIndex].PlayScheduled((nextMeasure + initTime));
+				soundIndex = (soundIndex + 1) % sources.Length;
+				startPlayingScheduled = true;
+
+				}
+
+			if (startedPlaying && (sixteenthCount + 4) % 8 == 0) {
+
+				// Halfway into the beat, check scheduling for loop.
+
+				if ((beatCountForLooping + 1) % beatsToLoop == 0) {
+
+					// Schedule next audio loop.
+
+					sources[soundIndex].PlayScheduled((nextBeat + initTime));
+					soundIndex = (soundIndex + 1) % sources.Length;
+				}
+
+			}
+			
+			if (sixteenthCount % 8 == 0) { // Beat.
+				nextBeat += BeatLength;
+				sixteenthCount = 0;
+				beatCount += 1;
+				if (startedPlaying) {
+					beatCountForLooping += 1;
+				}
+
+				// Beat Event.
+				OnCritterBeat();
+
+				if (beatCount % 4 == 0) { // Measure.
+					nextMeasure += MeasureLength;
+					beatCount = 0;
+
+					if (startPlayingScheduled && !StartedPlaying) {
+						// Critters start on the measure it this one
+						// was scheduled to start here, so set the boolean
+						startedPlaying = true;
+					}
+				}
+
+				if (startedPlaying && beatCountForLooping % beatsToLoop == 0) { // Loop.
+					beatCountForLooping = 0;
+					loopTime = myTime;
+
+					// Loop event.
+					OnCritterLoop ();
+				}
+			}
 		}
 
 		// *****************
@@ -164,12 +285,6 @@ public abstract class Critter : MonoBehaviour {
 			halo.color = Color.white;
 		}
 		
-		// *************
-		// PLAYING AUDIO
-		// *************
-
-		playSound ();
-		
 		// ***************
 		// SUBCLASS UPDATE
 		// ***************
@@ -178,18 +293,10 @@ public abstract class Critter : MonoBehaviour {
 
 	}
 
-	void playSound() {
-		if (beatsSinceLastPlay >= beatsToLoop) {
-			sources[soundIndex].PlayScheduled(nextBeatTime);
-			soundIndex = (soundIndex + 1)%sources.Length;
-			beatsSinceLastPlay = 0;
-		}
-	}
-
 	/// <summary>
 	/// Called right after Critter's Start() method.
 	/// </summary>
-	public abstract void CritterStart();
+	public virtual void CritterStart() { }
 
 	/// <summary>
 	/// Returns an AudioClip to be played by this critter.
@@ -208,12 +315,23 @@ public abstract class Critter : MonoBehaviour {
 	/// To be overloaded by implemented critters.
 	/// Called once per beat.
 	/// </summary>
-	public abstract void OnCritterBeat();
+	public virtual void OnCritterBeat() { }
+
+	/// <summary>
+	/// Called once every sixteenth note.
+	/// </summary>
+	public virtual void OnCritterSixteenth() { }
+
+	/// <summary>
+	/// Called every time the creature's audio
+	/// loops around to play again.
+	/// </summary>
+	public virtual void OnCritterLoop() { }
 
 	/// <summary>
 	/// To be overloaded by implemented critters.
 	/// </summary>
-	public abstract void PostCritterUpdate();
+	public virtual void PostCritterUpdate() { }
 	
 	/// <summary>
 	/// Gets a random spawn location for this critter.

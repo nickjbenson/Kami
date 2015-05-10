@@ -10,8 +10,6 @@ public class Oscilloop : Critter {
 	/// unless you know what you're doing!
 	/// </summary>
 	public float timeConstant = 2f;
-	private float initTime = 0f;
-	public float curTime = 0f;
 
 	// OBJECT HOOKS	
 	public Transform inner1;
@@ -49,8 +47,6 @@ public class Oscilloop : Critter {
 		// as oscilloops are rather large.
 		critterRadius = 3.0f;
 
-		// Animation time initialization.
-		initTime = (float)AudioSettings.dspTime;
 		
 		// Ring oscillation configuration initialization.
 		innerRings = new Transform[] {inner1, inner2, inner3, inner4, inner5, inner6, inner7, inner8};
@@ -100,12 +96,6 @@ public class Oscilloop : Critter {
 	
 	public override void PostCritterUpdate() {
 		
-		// *********************
-		// INFORMATION GATHERING
-		// *********************
-		
-		curTime = (float)AudioSettings.dspTime - initTime;
-		
 		// ****************
 		// RING OSCILLATION
 		// ****************
@@ -115,13 +105,13 @@ public class Oscilloop : Critter {
 			
 			// There are 16 frequency oscillations and 8 rings,
 			// so here we sum 2 frequencies per ring.
-			Vector3 newPosition = new Vector3(0, Mathf.Sin(Mathf.PI * curTime * timeConstant * freqs[i*2]), 0) * amps[i*2];
-			newPosition += new Vector3(0, Mathf.Sin (Mathf.PI * curTime * timeConstant * freqs[i*2 + 1]), 0) * amps[i*2 + 1];
+			Vector3 newPosition = new Vector3(0, Mathf.Sin(Mathf.PI * (float)LivingTime * timeConstant * freqs[i*2]), 0) * amps[i*2];
+			newPosition += new Vector3(0, Mathf.Sin (Mathf.PI * (float)LivingTime * timeConstant * freqs[i*2 + 1]), 0) * amps[i*2 + 1];
 			
 			ring.localPosition = newPosition;
 		}
 		
-		masterRing.localPosition = new Vector3 (0, Mathf.Sin (0.025f * curTime * timeConstant), 0);
+		masterRing.localPosition = new Vector3 (0, Mathf.Sin (0.025f * (float)LivingTime * timeConstant), 0);
 
 		// *****************
 		// MOVEMENT BEHAVIOR

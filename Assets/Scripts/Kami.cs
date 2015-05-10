@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 /// The parent (and creator) of all critters in the world. Kami is the one that instantiates new critters into the
@@ -9,8 +9,17 @@ using System.Collections;
 public class Kami : MonoBehaviour {
 
 	// Global music configuration
-	public float globalTempo; //number of seconds until next beat
+	public float globalTempo; // seconds per beat
 	public int globalKey;
+
+	// Max scheduling latency
+	public double maxLatency;
+
+	private double dspTime = 0;
+	private double initDspTime = 0;
+	private double nextMeasure = 0;
+	private double nextBeat = 0;
+	private double nextSixteenth = 0;
 
 	public string createHummingloopKey = "1"; // Key to press to spawn a Hummingloop
 	public string createBoxwormKey = "2"; // Key to press to spawn a Hummingloop
@@ -26,8 +35,6 @@ public class Kami : MonoBehaviour {
 	public Transform mine; // mine prefab
 	public Transform oscilloop; // oscilloop prefab
 
-	private float nextBeat; //time in seconds at which next note should be played
-
 	// CRITTER ACTION RADII
 	// No-Go / turnaround radius
 	public float turnaroundRad = 9f;
@@ -40,7 +47,14 @@ public class Kami : MonoBehaviour {
 
 	// Focused transform (critter)
 	private Critter focus = null;
-	private bool focusActive = false;
+
+	// LOADED AUDIO RESOURCES
+	// Hummingloop
+	private AudioClip[] hummingloopAudio;
+	private Hummingloop.HummingloopConfig[] hummingloopConfigs;
+	// Boxworm
+	private AudioClip[] boxwormAudio;
+	private Boxworm.BoxwormConfig[] boxwormConfigs;
 
 	// Oculus Reticle
 	public OculusReticle reticle;
@@ -60,14 +74,110 @@ public class Kami : MonoBehaviour {
 	public bool oculusEnabled = false;
 
 	void Start() {
-		nextBeat = (float) AudioSettings.dspTime + globalTempo;
+		initDspTime = AudioSettings.dspTime;
+
+		// Audio Latency calculation
+		int bufferLength = 0, numBuffers = 0;
+		AudioSettings.GetDSPBufferSize(out bufferLength, out numBuffers);
+		maxLatency = (bufferLength * numBuffers) / 44100.0;
+
+		// ************************************
+		// LOADING AUDIO & CONFIGURATION ASSETS
+		// ************************************
+
+		// HUMMINGLOOPS (aka Honkyloops)
+
+		// Hummingloop audio
+		print ("Loading hummingloop audio.");
+		hummingloopAudio = new AudioClip[30];
+		for (int i = 3; i < 29; i++) {
+			hummingloopAudio[i] = (AudioClip)Resources.Load ("Audio/hum_output" + i);
+		}
+		print ("Done loading hummingloop audio.");
+
+		// Hummingloop config
+		print ("Loading hummingloop configs.");
+		hummingloopConfigs = new Hummingloop.HummingloopConfig[30];
+		for (int i = 3; i < 29; i++) {
+			Hummingloop.HummingloopConfig config = new Hummingloop.HummingloopConfig();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/hum_output" + i + "_config");
+			var result = textConfig.text.Split (' ');
+			int j = 0;
+			int highestPitch = 0;
+			int lowestPitch = 200;
+			config.pitches = new int[result.Length];
+			foreach (string pitchStr in result) {
+				config.pitches[j] = int.Parse (pitchStr);
+				if (config.pitches[j] < lowestPitch && config.pitches[j] > 0) {
+					lowestPitch = config.pitches[j];
+				}
+				if (config.pitches[j] > highestPitch) {
+					highestPitch = config.pitches[j];
+				}
+				j++;
+			}
+			config.middlePitch = (highestPitch + lowestPitch) / 2;
+			config.pitchRadius = highestPitch - config.middlePitch;
+			hummingloopConfigs[i] = config;
+		}
+		print ("Done loading hummingloop configs.");
+
+		// BOXWORMS (aka Bevelworms)
+
+		// Boxworm audio
+		print ("Loading boxworm audio.");
+		boxwormAudio = new AudioClip[30];
+		for (int i = 3; i < 29; i++) {
+			boxwormAudio[i] = (AudioClip)Resources.Load ("Audio/box_output" + i);
+		}
+		print ("Done loading boxworm audio.");
+
+		// Boxworm config
+		print ("Loading boxworm configs.");
+		boxwormConfigs = new Boxworm.BoxwormConfig[30];
+		for (int i = 3; i < 29; i++) {
+			Boxworm.BoxwormConfig config = new Boxworm.BoxwormConfig();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/box_output" + i + "_config");
+			var result = textConfig.text.Split (' ');
+			int j = 0;
+			int hit = 0;
+			config.hits = new int[result.Length];
+			foreach (string pitchStr in result) {
+				hit = int.Parse (pitchStr);
+				// possible hits: {-1:-1, 48:50, 45:47, 42:-1, 35:36}
+				int hitType = 0;
+				switch (hit) {
+					case 48:
+						hitType = 1; break;
+					case 50:
+						hitType = 1; break;
+					case 45:
+						hitType = 2; break;
+					case 47:
+						hitType = 2; break;
+					case 42:
+						hitType = 3; break;
+					case 35:
+						hitType = 4; break;
+					case 36:
+						hitType = 4; break;
+					default:
+						hitType = -1; break;
+				}
+				config.hits[j] = hitType;
+				j++;
+			}
+			boxwormConfigs[i] = config;
+		}
+		print ("Done loading boxworm configs.");
 	}
 
-	void Update(){
-		OculusUpdate ();
+	void FixedUpdate(){
+		PlayerUpdate ();
+		TimeUpdate ();
 	}
 
-	void OculusUpdate () {
+	void PlayerUpdate () {
 
 		// Leap Motion checks
 		if (oculusEnabled) {
@@ -92,6 +202,7 @@ public class Kami : MonoBehaviour {
 
 		if (Input.GetKeyDown (createHummingloopKey)) {
 			spawnCritter("hummingloop");
+			print ("Spawning Honkyloop");
 		}
 		if (Input.GetKeyDown (createBoxwormKey)) {
 			spawnCritter("boxworm");
@@ -109,13 +220,15 @@ public class Kami : MonoBehaviour {
 		// Set the focus based on reticle's target
 		Transform target = reticle.Target;
 		if (target != null) {
-			focus = target.parent.GetComponent<Critter>();
+			if (target.parent != null) {
+				focus = target.parent.GetComponent<Critter>();
+			}
 		} else {
 			focus = null;
 		}
 
 		// Pulling
-		print (focus);
+		// print (focus);
 		if (Input.GetKey (pullKey) || leapPull) {
 			if (focus != null) {
 				pulling = true;
@@ -136,6 +249,16 @@ public class Kami : MonoBehaviour {
 		} else {
 			pushing = false;
 		}
+	}
+
+	void TimeUpdate() {
+
+		dspTime = AudioSettings.dspTime - initDspTime;
+
+		nextMeasure = (dspTime - (dspTime % (globalTempo * 4))) + globalTempo * 4;
+		nextBeat = (dspTime - (dspTime % globalTempo)) + globalTempo;
+		nextSixteenth = (dspTime - (dspTime % (globalTempo / 8))) + globalTempo / 8;
+
 	}
 
 	public void spawnCritter(string critterName) {
@@ -176,14 +299,27 @@ public class Kami : MonoBehaviour {
 		
 	}
 
-	public float getNextBeat() {
-		if (nextBeat == 0) {
-			nextBeat = (float) AudioSettings.dspTime;
+	public float DSPTime {
+		get {
+			return (float)dspTime;
 		}
-		if (nextBeat <= AudioSettings.dspTime) {
-			nextBeat += globalTempo;
+	}
+	public float NextMeasure {
+		get {
+			return (float)nextMeasure;
 		}
-		return nextBeat;
+	}
+	public float NextBeat {
+		get {
+			return (float)nextBeat;
+		}
+	}
+	// TODO: Theoretically this should be 1/4 of a beat
+	// but for some reason it's actually 1/8th?
+	public float NextSixteenth {
+		get {
+			return (float)nextSixteenth;
+		}
 	}
 	
 	/// <summary>
@@ -212,6 +348,20 @@ public class Kami : MonoBehaviour {
 
 	public void DeregisterCapture(Critter critter) {
 		// mm hmm ok
+	}
+
+	public AudioClip GetHummingloopAudio(int i) {
+		return hummingloopAudio [i];
+	}
+	public Hummingloop.HummingloopConfig GetHummingloopConfig(int i) {
+		return hummingloopConfigs [i];
+	}
+
+	public AudioClip GetBoxwormAudio(int i) {
+		return boxwormAudio [i];
+	}
+	public Boxworm.BoxwormConfig GetBoxwormConfig(int i) {
+		return boxwormConfigs [i];
 	}
 	
 }
