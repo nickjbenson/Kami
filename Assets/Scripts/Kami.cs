@@ -54,6 +54,9 @@ public class Kami : MonoBehaviour {
 	private AudioClip[] boxwormAudio;
 	private Boxworm.BoxwormConfig[] boxwormConfigs;
 	// Maracaws
+	private AudioClip[] maracawsAudio;
+	// Mine
+	private AudioClip[] mineAudio;
 
 	// Oculus Reticle
 	public OculusReticle reticle;
@@ -77,7 +80,7 @@ public class Kami : MonoBehaviour {
 
 		// Audio Latency calculation
 		int bufferLength = 0, numBuffers = 0;
-		AudioSettings.GetDSPBufferSize(out bufferLength, out numBuffers);
+		AudioSettings.GetDSPBufferSize (out bufferLength, out numBuffers);
 		maxLatency = (bufferLength * numBuffers) / 44100.0;
 
 		// ************************************
@@ -90,7 +93,7 @@ public class Kami : MonoBehaviour {
 		print ("Loading hummingloop audio.");
 		hummingloopAudio = new AudioClip[30];
 		for (int i = 3; i < 29; i++) {
-			hummingloopAudio[i] = (AudioClip)Resources.Load ("Audio/hum_output" + i);
+			hummingloopAudio [i] = (AudioClip)Resources.Load ("Audio/hum_output" + i);
 		}
 		print ("Done loading hummingloop audio.");
 
@@ -98,7 +101,7 @@ public class Kami : MonoBehaviour {
 		print ("Loading hummingloop configs.");
 		hummingloopConfigs = new Hummingloop.HummingloopConfig[30];
 		for (int i = 3; i < 29; i++) {
-			Hummingloop.HummingloopConfig config = new Hummingloop.HummingloopConfig();
+			Hummingloop.HummingloopConfig config = new Hummingloop.HummingloopConfig ();
 			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/hum_output" + i + "_config");
 			var result = textConfig.text.Split (' ');
 			int j = 0;
@@ -106,18 +109,18 @@ public class Kami : MonoBehaviour {
 			int lowestPitch = 200;
 			config.pitches = new int[result.Length];
 			foreach (string pitchStr in result) {
-				config.pitches[j] = int.Parse (pitchStr);
-				if (config.pitches[j] < lowestPitch && config.pitches[j] > 0) {
-					lowestPitch = config.pitches[j];
+				config.pitches [j] = int.Parse (pitchStr);
+				if (config.pitches [j] < lowestPitch && config.pitches [j] > 0) {
+					lowestPitch = config.pitches [j];
 				}
-				if (config.pitches[j] > highestPitch) {
-					highestPitch = config.pitches[j];
+				if (config.pitches [j] > highestPitch) {
+					highestPitch = config.pitches [j];
 				}
 				j++;
 			}
 			config.middlePitch = (highestPitch + lowestPitch) / 2;
 			config.pitchRadius = highestPitch - config.middlePitch;
-			hummingloopConfigs[i] = config;
+			hummingloopConfigs [i] = config;
 		}
 		print ("Done loading hummingloop configs.");
 
@@ -127,7 +130,7 @@ public class Kami : MonoBehaviour {
 		print ("Loading boxworm audio.");
 		boxwormAudio = new AudioClip[30];
 		for (int i = 3; i < 29; i++) {
-			boxwormAudio[i] = (AudioClip)Resources.Load ("Audio/box_output" + i);
+			boxwormAudio [i] = (AudioClip)Resources.Load ("Audio/box_output" + i);
 		}
 		print ("Done loading boxworm audio.");
 
@@ -135,7 +138,7 @@ public class Kami : MonoBehaviour {
 		print ("Loading boxworm configs.");
 		boxwormConfigs = new Boxworm.BoxwormConfig[30];
 		for (int i = 3; i < 29; i++) {
-			Boxworm.BoxwormConfig config = new Boxworm.BoxwormConfig();
+			Boxworm.BoxwormConfig config = new Boxworm.BoxwormConfig ();
 			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/box_output" + i + "_config");
 			var result = textConfig.text.Split (' ');
 			int j = 0;
@@ -146,66 +149,57 @@ public class Kami : MonoBehaviour {
 				// possible hits: {-1:-1, 48:50, 45:47, 42:-1, 35:36}
 				int hitType = 0;
 				switch (hit) {
-					case 48:
-						hitType = 1; break;
-					case 50:
-						hitType = 1; break;
-					case 45:
-						hitType = 2; break;
-					case 47:
-						hitType = 2; break;
-					case 42:
-						hitType = 3; break;
-					case 35:
-						hitType = 4; break;
-					case 36:
-						hitType = 4; break;
-					default:
-						hitType = -1; break;
+				case 48:
+					hitType = 1;
+					break;
+				case 50:
+					hitType = 1;
+					break;
+				case 45:
+					hitType = 2;
+					break;
+				case 47:
+					hitType = 2;
+					break;
+				case 42:
+					hitType = 3;
+					break;
+				case 35:
+					hitType = 4;
+					break;
+				case 36:
+					hitType = 4;
+					break;
+				default:
+					hitType = -1;
+					break;
 				}
-				config.hits[j] = hitType;
+				config.hits [j] = hitType;
 				j++;
 			}
-			boxwormConfigs[i] = config;
+			boxwormConfigs [i] = config;
 		}
 		print ("Done loading boxworm configs.");
 
-//		// MARACAWS
-//		
-//		// Maracaws audio
-//		print ("Loading maracaws audio.");
-//		maracawsAudio = new AudioClip[30];
-//		for (int i = 3; i < 29; i++) {
-//			maracawsAudio[i] = (AudioClip)Resources.Load ("Audio/maracaws_output" + i);
-//		}
-//		print ("Done loading maracaws audio.");
-//		
-//		// Maracaws config
-//		print ("Loading maracaws configs.");
-//		hummingloopConfigs = new Hummingloop.HummingloopConfig[30];
-//		for (int i = 3; i < 29; i++) {
-//			Hummingloop.HummingloopConfig config = new Hummingloop.HummingloopConfig();
-//			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/maracaws_output" + i + "_config");
-//			var result = textConfig.text.Split (' ');
-//			int j = 0;
-//			int highestPitch = 0;
-//			int lowestPitch = 200;
-//			config.pitches = new int[result.Length];
-//			foreach (string pitchStr in result) {
-//				config.pitches[j] = int.Parse (pitchStr);
-//				if (config.pitches[j] < lowestPitch && config.pitches[j] > 0) {
-//					lowestPitch = config.pitches[j];
-//				}
-//				if (config.pitches[j] > highestPitch) {
-//					highestPitch = config.pitches[j];
-//				}
-//				j++;
-//			}
-//			config.middlePitch = (highestPitch + lowestPitch) / 2;
-//			config.pitchRadius = highestPitch - config.middlePitch;
-//			hummingloopConfigs[i] = config;
-//		}
-//		print ("Done loading maracaws configs.");
+		// MARACAWS
+		
+		// Maracaws audio
+		print ("Loading maracaws audio.");
+		maracawsAudio = new AudioClip[31];
+		for (int i = 1; i <= 30; i++) {
+			maracawsAudio [i] = (AudioClip)Resources.Load ("Audio/maracaws_output" + i);
+		}
+		print ("Done loading maracaws audio.");
+
+		// MINE
+		
+		// Mine audio
+		print ("Loading mine audio.");
+		maracawsAudio = new AudioClip[9];
+		for (int i = 1; i <= 8; i++) {
+			maracawsAudio [i] = (AudioClip)Resources.Load ("Audio/mine_output" + i);
+		}
+		print ("Done loading mine audio.");
 	}
 
 	void FixedUpdate(){
@@ -398,6 +392,12 @@ public class Kami : MonoBehaviour {
 	}
 	public Boxworm.BoxwormConfig GetBoxwormConfig(int i) {
 		return boxwormConfigs [i];
+	}
+	public AudioClip GetMaracawsAudio(int i) {
+		return maracawsAudio [i];
+	}
+	public AudioClip GetMineAudio(int i) {
+		return mineAudio [i];
 	}
 	
 }

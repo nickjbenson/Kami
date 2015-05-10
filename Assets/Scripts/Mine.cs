@@ -20,7 +20,7 @@ public class Mine : Critter {
 	
 	public override AudioClip GetCritterAudio() {
 		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/mine_output" + idx);
+		AudioClip clip = kami.GetMineAudio(idx);
 		return clip;
 	}
 	

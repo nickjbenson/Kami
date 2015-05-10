@@ -21,8 +21,8 @@ public class Maracaws : Critter {
 	}
 
 	public override AudioClip GetCritterAudio() {
-		int idx = (int) Mathf.Ceil(Random.Range (1, 27));
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/maracaws_output" + idx);
+		int idx = (int) Mathf.Ceil(Random.Range (1, 30));
+		AudioClip clip = kami.GetMaracawsAudio(idx);
 		return clip;
 	}
 	
