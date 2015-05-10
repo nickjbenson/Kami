@@ -3,9 +3,7 @@ using System.Collections;
 
 /// The parent (and creator) of all critters in the world. Kami is the one that instantiates new critters into the
 /// world.
-/// Also knows the global tempo and chord, and affects the rest of the critters.
 /// Critters get globalTempo and globalKey from Kami.
-/// When critter is captured, it gets whirlwindSpeed and whirlwindRadius from Kami.
 public class Kami : MonoBehaviour {
 
 	// Global music configuration
@@ -55,6 +53,7 @@ public class Kami : MonoBehaviour {
 	// Boxworm
 	private AudioClip[] boxwormAudio;
 	private Boxworm.BoxwormConfig[] boxwormConfigs;
+	// Maracaws
 
 	// Oculus Reticle
 	public OculusReticle reticle;
@@ -170,6 +169,43 @@ public class Kami : MonoBehaviour {
 			boxwormConfigs[i] = config;
 		}
 		print ("Done loading boxworm configs.");
+
+//		// MARACAWS
+//		
+//		// Maracaws audio
+//		print ("Loading maracaws audio.");
+//		maracawsAudio = new AudioClip[30];
+//		for (int i = 3; i < 29; i++) {
+//			maracawsAudio[i] = (AudioClip)Resources.Load ("Audio/maracaws_output" + i);
+//		}
+//		print ("Done loading maracaws audio.");
+//		
+//		// Maracaws config
+//		print ("Loading maracaws configs.");
+//		hummingloopConfigs = new Hummingloop.HummingloopConfig[30];
+//		for (int i = 3; i < 29; i++) {
+//			Hummingloop.HummingloopConfig config = new Hummingloop.HummingloopConfig();
+//			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/maracaws_output" + i + "_config");
+//			var result = textConfig.text.Split (' ');
+//			int j = 0;
+//			int highestPitch = 0;
+//			int lowestPitch = 200;
+//			config.pitches = new int[result.Length];
+//			foreach (string pitchStr in result) {
+//				config.pitches[j] = int.Parse (pitchStr);
+//				if (config.pitches[j] < lowestPitch && config.pitches[j] > 0) {
+//					lowestPitch = config.pitches[j];
+//				}
+//				if (config.pitches[j] > highestPitch) {
+//					highestPitch = config.pitches[j];
+//				}
+//				j++;
+//			}
+//			config.middlePitch = (highestPitch + lowestPitch) / 2;
+//			config.pitchRadius = highestPitch - config.middlePitch;
+//			hummingloopConfigs[i] = config;
+//		}
+//		print ("Done loading maracaws configs.");
 	}
 
 	void FixedUpdate(){
