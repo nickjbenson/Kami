@@ -42,6 +42,7 @@ public class Angel : Critter {
 
 	public override void OnCritterSixteenth(){
 		if (StartedPlaying) {
+			print(sixteenthCount);
 			if (config.hits [angel_idx]) {
 				active = true;
 			}
