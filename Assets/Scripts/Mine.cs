@@ -20,12 +20,12 @@ public class Mine : Critter {
 	
 	public override AudioClip GetCritterAudio() {
 		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/mine_output" + idx);
+		AudioClip clip = kami.GetMineAudio(idx);
 		return clip;
 	}
 	
 	public override int GetCritterBeatsToLoop() {
-		return 8;
+		return 4;
 	}
 	
 	public override void OnCritterBeat() {
@@ -85,9 +85,9 @@ public class Mine : Critter {
 		// ******************
 
 		if (expanding == 0 || expanding == 1) {
-			transform.localScale += Vector3.one/200.0f;
+			transform.localScale += Vector3.one/500.0f;
 		} else {
-			transform.localScale -= Vector3.one/200.0f;
+			transform.localScale -= Vector3.one/500.0f;
 		}
 		
 		// **************

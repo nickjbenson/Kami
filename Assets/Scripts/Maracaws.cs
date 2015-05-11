@@ -3,8 +3,15 @@ using System.Collections;
 
 public class Maracaws : Critter {
 
-	public double angularSpeed;
-	
+	// OBJECT HOOKS
+	public Transform end1;
+	public Transform end2;
+
+	// ANIMATION VARIABLES
+	public float angularSpeed;
+//	private MaracawsConfig config;
+//	private int maracaws_idx = 0;
+
 	// MOVEMENT VARIABLES
 	public float speed = 0.05f; // Movement speed towards target
 	public float rotSpeed = 0.1f; // Rotation speed towards target
@@ -21,8 +28,12 @@ public class Maracaws : Critter {
 	}
 
 	public override AudioClip GetCritterAudio() {
-		int idx = (int) Mathf.Ceil(Random.Range (1, 27));
-		AudioClip clip = (AudioClip)Resources.Load ("Audio/maracaws_output" + idx);
+		int idx = (int) Mathf.Ceil(Random.Range (1, 30));
+		AudioClip clip = kami.GetMaracawsAudio(idx);
+
+		// Animation configuration text parsing
+//		config = kami.GetMaracawsConfig (idx);
+
 		return clip;
 	}
 	
@@ -35,6 +46,19 @@ public class Maracaws : Critter {
 		survivalTime -= 1;
 		refreshTarget = true;
 	}
+
+//	public override void OnCritterSixteenth() {
+//		
+//		if (StartedPlaying) {
+//			if (config.onoff [maracaws_idx] != -1) {
+//				Color prev_color = end1.GetComponent<Renderer> ().material.color;
+//				Color color = new Color(1 - prev_color.r, 1 - prev_color.g, 1 - prev_color.b);
+//				end1.GetComponent<Renderer> ().material.color = color;
+//				end2.GetComponent<Renderer> ().material.color = color;
+//			}
+//			maracaws_idx = (maracaws_idx + 1) % config.onoff.Length;
+//		}
+//	}
 	
 	// Update is called once per frame
 	public override void PostCritterUpdate () {
@@ -46,57 +70,45 @@ public class Maracaws : Critter {
 		if (BeingPulled || Captured) {
 			// Movement logic while captured or being pulled.
 			leaving = false;
-		}	
-//		} else {
-//			// Movement logic while not captured.
-//			
-//			// While not leaving, get new target whenever
-//			// we must refresh it
-//			if (!leaving) {
-//				if (refreshTarget) {
-//					target = getRandomSpawnLocation();
-//					refreshTarget = false;
-//				}
-//			}
-//			
-//			// If too close to player, turn around
-//			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled && survivalTime > 0) {
-//				target = (transform.position - kami.transform.position) + transform.position;
-//			}
-//			
-//			// Leave if survivalTime is below zero
-//			if (survivalTime <= 0 && !leaving) {
-//				leaving = true;
-//				// Get a target far away
-//				target = Random.onUnitSphere * 200;
-//			}
-//			
-//			// Start dying past the death radius
-//			if (DistanceFromKami > kami.deathRadius) {
-//				dying = true;
-//			}
-//			
-//			// Smoothly rotate to target
-//			// Slerp to facing
-//			transform.rotation = Quaternion.Slerp(transform.rotation,
-//			                                      Quaternion.LookRotation (target - transform.position),
-//			                                      rotSpeed);
-//			// Move forward at speed
-//			transform.position += transform.forward * speed;
-//		}
+		} else {
+			// Movement logic while not captured.
+			
+			// While not leaving, get new target whenever
+			// we must refresh it
+			if (!leaving) {
+				if (refreshTarget) {
+					target = getRandomSpawnLocation();
+					refreshTarget = false;
+				}
+			}
+			
+			// If too close to player, turn around
+			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled && survivalTime > 0) {
+				target = (transform.position - kami.transform.position) + transform.position;
+			}
+			
+			// Leave if survivalTime is below zero
+			if (survivalTime <= 0 && !leaving) {
+				leaving = true;
+				// Get a target far away
+				target = Random.onUnitSphere * 200;
+			}
+			
+			// Start dying past the death radius
+			if (DistanceFromKami > kami.deathRadius) {
+				dying = true;
+			}
 
-		// Rotate on axis
-		// TODO: This rotation is overriden when the creature
-		// isn't captured. Either this logic or the logic
-		// above needs to be changed so the maracaws rotates
-		// even when not captured.
+			// Move forward at speed
+			transform.position += transform.forward * speed;
+		}
+
 		// *****************
 		// INTERNAL MOVEMENT
 		// *****************
 
-		transform.Rotate (0.0f, 0.0f, 360f / (float) (GetCritterBeatsToLoop () * angularSpeed));
-		// makes one full cycle per beat
-		
+		transform.Rotate (0.0f, 0.0f, angularSpeed);
+
 		// **************
 		// DEATH BEHAVIOR
 		// **************
@@ -106,6 +118,10 @@ public class Maracaws : Critter {
 			Destroy(this.gameObject);
 		}
 	}
+
+	void twitch(){
+
+	}
 	
 	public override Vector3 getRandomSpawnLocation() {
 		float maxSpawnRad = kami.deathRadius - 5f;
@@ -114,5 +130,15 @@ public class Maracaws : Critter {
 			rPos = Random.insideUnitSphere * maxSpawnRad; // try again
 		}
 		return rPos;
+	}
+
+	public class MaracawsConfig {
+		
+		public int[] onoff;
+
+		public int size(){
+			return onoff.Length;
+		}
+		
 	}
 }
