@@ -7,6 +7,8 @@ public class TomTom : Critter {
 	bool active = false;
 	public float angularSpeed;
 	private float rotatedSoFar = 0;
+	private Critter.SparseConfig config;
+	private int tomtom_idx = 0;
 	
 	// MOVEMENT VARIABLES
 	public float speed = 0.01f; // Movement speed towards target
@@ -23,9 +25,9 @@ public class TomTom : Critter {
 	
 	public override AudioClip GetCritterAudio() {
 		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
-		AudioClip clip = kami.GetMineAudio(idx);
-		//TODO: replace with actual clip
-		//TODO: map color to pitch, using config
+		AudioClip clip = kami.GetTomTomAudio(idx);
+		config = kami.GetTomTomConfig (idx);
+		//TODO: map color to config.pitch
 		return clip;
 	}
 	
@@ -35,16 +37,19 @@ public class TomTom : Critter {
 	
 	public override void OnCritterBeat() {
 		survivalTime -= 1;
-		// TODO: check config to set active
 	}
-	
+
+	public override void OnCritterSixteenth(){
+		if (StartedPlaying) {
+			if (config.hits [tomtom_idx]) {
+				active = true;
+			}
+			tomtom_idx = (tomtom_idx + 1) % config.hits.Length;
+		}
+	}
+
 	public override void PostCritterUpdate() {
 
-		// TODO: get rid of this once you've implemented beat matching
-		if (Input.GetKey ("z")) {
-			active = true;
-		}
-		
 		// *****************
 		// MOVEMENT BEHAVIOR
 		// *****************
