@@ -26,6 +26,13 @@ kSamplingRate = 44100
 kOutputChannels = 2
 
 
+## Interesting midi instrumnts:
+## - 1xx: Goblin
+## - 86: sawtooth
+## - 84: charang
+## - 106: Shamisen high
+## - 128 0 81: triangle
+## - Really fast church bells
 
 # # Follows code to play things out loud
 # # =================================================
