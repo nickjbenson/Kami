@@ -45,6 +45,9 @@ class Mine(BaseGenerator):
         # Key and chords
         self.key = 36
         self.chords = PROGRESSIONS[idx]
+        for x in xrange(0, len(self.chords)):
+            self.chords[x] += self.key
+            
         self.note_velocity = 120
 
         self.set_cpb(0, 0, 58) #tuba
