@@ -20,7 +20,8 @@ class Swarp(BaseGenerator):
         # Notes
         self.notes = choose_notes()
         self.note_velocity = 60
-        self.set_cpb(0, 0, seed)
+        self.set_cpb(0, 128, 0)
+
         self.set_num_notes_per_beat(NOTES_PER_BEAT)
         print seed
 
@@ -34,8 +35,13 @@ class Swarp(BaseGenerator):
 
 def choose_notes():
     notesList = []
-    for i in xrange(60, 85):
-        notesList.append(i)
+    for i in xrange(0, 16):
+        notesList.append(81)
+    for i in xrange(0, 48):
+        notesList.append(0)
+    # Super sparse
+    for i in xrange(0, 8*16):
+        notesList.append(0)
     return notesList
 
 

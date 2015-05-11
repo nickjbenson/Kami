@@ -35,6 +35,7 @@ class BaseGenerator(object):
         self.set_cpb(10, 128, 0)
         self.cur_idx = 0
         self.set_num_notes_per_beat(kDefaultNumNotesPerBeat)
+        #self.synth.set_reverb_on(True)
 
     # Subclasses should override this
     # can return an array of scalars, or an
