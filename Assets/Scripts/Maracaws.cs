@@ -3,8 +3,15 @@ using System.Collections;
 
 public class Maracaws : Critter {
 
-	public double angularSpeed;
-	
+	// OBJECT HOOKS
+	public Transform end1;
+	public Transform end2;
+
+	// ANIMATION VARIABLES
+	public float angularSpeed;
+//	private MaracawsConfig config;
+//	private int maracaws_idx = 0;
+
 	// MOVEMENT VARIABLES
 	public float speed = 0.05f; // Movement speed towards target
 	public float rotSpeed = 0.1f; // Rotation speed towards target
@@ -23,6 +30,10 @@ public class Maracaws : Critter {
 	public override AudioClip GetCritterAudio() {
 		int idx = (int) Mathf.Ceil(Random.Range (1, 30));
 		AudioClip clip = kami.GetMaracawsAudio(idx);
+
+		// Animation configuration text parsing
+//		config = kami.GetMaracawsConfig (idx);
+
 		return clip;
 	}
 	
@@ -35,6 +46,19 @@ public class Maracaws : Critter {
 		survivalTime -= 1;
 		refreshTarget = true;
 	}
+
+//	public override void OnCritterSixteenth() {
+//		
+//		if (StartedPlaying) {
+//			if (config.onoff [maracaws_idx] != -1) {
+//				Color prev_color = end1.GetComponent<Renderer> ().material.color;
+//				Color color = new Color(1 - prev_color.r, 1 - prev_color.g, 1 - prev_color.b);
+//				end1.GetComponent<Renderer> ().material.color = color;
+//				end2.GetComponent<Renderer> ().material.color = color;
+//			}
+//			maracaws_idx = (maracaws_idx + 1) % config.onoff.Length;
+//		}
+//	}
 	
 	// Update is called once per frame
 	public override void PostCritterUpdate () {
@@ -79,18 +103,12 @@ public class Maracaws : Critter {
 			transform.position += transform.forward * speed;
 		}
 
-		// Rotate on axis
-		// TODO: This rotation is overriden when the creature
-		// isn't captured. Either this logic or the logic
-		// above needs to be changed so the maracaws rotates
-		// even when not captured.
 		// *****************
 		// INTERNAL MOVEMENT
 		// *****************
 
-		transform.Rotate (0.0f, 0.0f, 360f / (float) (GetCritterBeatsToLoop () * angularSpeed));
-		// makes one full cycle per beat
-		
+		transform.Rotate (0.0f, 0.0f, angularSpeed);
+
 		// **************
 		// DEATH BEHAVIOR
 		// **************
@@ -112,5 +130,15 @@ public class Maracaws : Critter {
 			rPos = Random.insideUnitSphere * maxSpawnRad; // try again
 		}
 		return rPos;
+	}
+
+	public class MaracawsConfig {
+		
+		public int[] onoff;
+
+		public int size(){
+			return onoff.Length;
+		}
+		
 	}
 }
