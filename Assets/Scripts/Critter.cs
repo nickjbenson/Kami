@@ -237,6 +237,9 @@ public abstract class Critter : MonoBehaviour {
 		// *****************
 
 		if (DistanceFromKami <= kami.captureRadius && beingPulled) {
+			if (captured == false) {
+				OnCritterCapture ();
+			}
 			captured = true;
 		} else if (DistanceFromKami > kami.captureRadius && beingPushed && Captured) {
 			captured = false;
@@ -327,6 +330,29 @@ public abstract class Critter : MonoBehaviour {
 	/// loops around to play again.
 	/// </summary>
 	public virtual void OnCritterLoop() { }
+	
+	public void OnTriggerEnter(Collider collider) {
+		OnCritterTooCloseToObject(collider);
+	}
+	/// <summary>
+	/// Called when the critter is too close to a colliding object.
+	/// </summary>
+	/// <param name="collider">The collider of the object.</param>
+	public virtual void OnCritterTooCloseToObject(Collider collider) { }
+
+	public void OnTriggerStay(Collider collider) {
+		OnCritterStillTooCloseToObject (collider);
+	}
+	/// <summary>
+	/// Called when the critter stays too close to a colliding object.
+	/// </summary>
+	/// <param name="collider">The collider of the object.</param>
+	public virtual void OnCritterStillTooCloseToObject(Collider collider) { }
+
+	/// <summary>
+	/// Called when the critter is captured.
+	/// </summary>
+	public virtual void OnCritterCapture() { }
 
 	/// <summary>
 	/// To be overloaded by implemented critters.

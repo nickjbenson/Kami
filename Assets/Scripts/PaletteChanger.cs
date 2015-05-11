@@ -41,6 +41,13 @@ public class PaletteChanger : MonoBehaviour {
 	public Color sdBGColor;
 	
 	// COLOR ANIMATION
+	private Color oldPlatformColor;
+	private Color oldPondColor;
+	private Color oldIslandColor;
+	private Color oldTreeTrunkColor;
+	private Color oldTreeFoliageColor;
+	private Color oldCloudColor;
+	private Color oldBGColor;
 	private Color targetPlatformColor;
 	private Color targetPondColor;
 	private Color targetIslandColor;
@@ -58,6 +65,7 @@ public class PaletteChanger : MonoBehaviour {
 	private bool colorChanging;
 	private float timeSinceChange = 0f;
 	public float paletteChangeSpeed = 1f;
+	private AnimationCurve ease = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
 	// This is the camera that renders the background color
 	public UnityStandardAssets.ImageEffects.EdgeDetection edgeDetectionCamera;
@@ -65,26 +73,71 @@ public class PaletteChanger : MonoBehaviour {
 
 	public void Start() {
 
-		// Initialize current palette colors.
-		curPlatformColor = platformMat.color;
-		curPondColor = pondMat.color;
-		curIslandColor = islandMat.color;
-		curTreeTrunkColor = treeTrunkMat.color;
-		curTreeFoliageColor = treeFoliageMat.color;
-		curCloudColor = cloudMat.color;
-		curBGColor = edgeDetectionCamera.edgesOnlyBgColor;
+		// Initialize palette colors.
+		oldPlatformColor = curPlatformColor = psPlatformColor;
+		oldPondColor = curPondColor = psPondColor;
+		oldIslandColor = curIslandColor = psIslandColor;
+		oldTreeTrunkColor = curTreeTrunkColor = psTreeTrunkColor;
+		oldTreeFoliageColor = curTreeFoliageColor = psTreeFoliageColor;
+		oldCloudColor = curCloudColor = psCloudColor;
+		oldBGColor = curBGColor = psBGColor;
+
+		// Initialize actual colors based on current color variables
+		platformMat.color = curPlatformColor;
+		pondMat.color = curPondColor;
+		islandMat.color = curIslandColor;
+		treeTrunkMat.color = curTreeTrunkColor;
+		treeFoliageMat.color = curTreeFoliageColor;
+		cloudMat.color = curCloudColor;
+		edgeDetectionCamera.edgesOnlyBgColor = curBGColor;
 
 	}
 
 	public void Update() {
 
+		// DEBUG COLOR CHANGE COMMANDS
+
+		if (Input.GetKeyDown ("d")) {
+			ChangePalette("dazzle night");
+		}
+		if (Input.GetKeyDown ("s")) {
+			ChangePalette("sunset daze");
+		}
+		if (Input.GetKeyDown ("p")) {
+			ChangePalette("purple spring");
+		}
+
 		// Only do things if colors are currently changing
 		if (colorChanging) {
 
 			// Update time since the change.
+			timeSinceChange += Time.deltaTime;
 
-			// S
+			// Get animation easing time.
+			var t = ease.Evaluate(timeSinceChange * paletteChangeSpeed);
 
+			// Lerp current colors to target colors.
+			curPlatformColor = Color.Lerp (oldPlatformColor, targetPlatformColor, t);
+			curPondColor = Color.Lerp (oldPondColor, targetPondColor, t);
+			curIslandColor = Color.Lerp (oldIslandColor, targetIslandColor, t);
+			curTreeTrunkColor = Color.Lerp (oldTreeTrunkColor, targetTreeTrunkColor, t);
+			curTreeFoliageColor = Color.Lerp (oldTreeFoliageColor, targetTreeFoliageColor, t);
+			curCloudColor = Color.Lerp (oldCloudColor, targetCloudColor, t);
+			curBGColor = Color.Lerp (oldBGColor, targetBGColor, t);
+
+			// Actually update the colors based on current color variables
+			platformMat.color = curPlatformColor;
+			pondMat.color = curPondColor;
+			islandMat.color = curIslandColor;
+			treeTrunkMat.color = curTreeTrunkColor;
+			treeFoliageMat.color = curTreeFoliageColor;
+			cloudMat.color = curCloudColor;
+			edgeDetectionCamera.edgesOnlyBgColor = curBGColor;
+
+			// If enough time has passed, disable colorChanging
+			if (t == 1) {
+				colorChanging = false;
+			}
 		}
 
 	}
@@ -102,6 +155,40 @@ public class PaletteChanger : MonoBehaviour {
 
 	private void SetTargetPalette(string palette) {
 
+		// Set old colors for referencing for a smooth color transition.
+		oldPlatformColor = curPlatformColor;
+		oldPondColor = curPondColor;
+		oldIslandColor = curIslandColor;
+		oldTreeTrunkColor = curTreeTrunkColor;
+		oldTreeFoliageColor = curTreeFoliageColor;
+		oldCloudColor = curCloudColor;
+		oldBGColor = curBGColor;
+
+		if (palette == "purple spring") {
+			targetPlatformColor = psPlatformColor;
+			targetPondColor = psPondColor;
+			targetIslandColor = psIslandColor;
+			targetTreeTrunkColor = psTreeTrunkColor;
+			targetTreeFoliageColor = psTreeFoliageColor;
+			targetCloudColor = psCloudColor;
+			targetBGColor = psBGColor;
+		} else if (palette == "dazzle night") {
+			targetPlatformColor = dnPlatformColor;
+			targetPondColor = dnPondColor;
+			targetIslandColor = dnIslandColor;
+			targetTreeTrunkColor = dnTreeTrunkColor;
+			targetTreeFoliageColor = dnTreeFoliageColor;
+			targetCloudColor = dnCloudColor;
+			targetBGColor = dnBGColor;
+		} else if (palette == "sunset daze") {
+			targetPlatformColor = sdPlatformColor;
+			targetPondColor = sdPondColor;
+			targetIslandColor = sdIslandColor;
+			targetTreeTrunkColor = sdTreeTrunkColor;
+			targetTreeFoliageColor = sdTreeFoliageColor;
+			targetCloudColor = sdCloudColor;
+			targetBGColor = sdBGColor;
+		}
 	}
 	
 }

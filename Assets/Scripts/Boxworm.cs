@@ -120,7 +120,6 @@ public class Boxworm : Critter {
 
 		// Set state of head box
 		if (currentHit != -1) {
-			print ("current hit is " + currentHit);
 			targetHitOffsets[0] = hitOffsets [currentHit-1];
 			targetHitScales[0] = hitScales [currentHit-1];
 			targetHitColors[0] = hitColors [currentHit-1];
@@ -233,6 +232,15 @@ public class Boxworm : Critter {
 			}
 			
 		}
+	}
+
+	public override void OnCritterTooCloseToObject (Collider collider) {
+		// Set drift vector away from collider
+		targetDriftVector = ((transform.position - collider.transform.position) + transform.position).normalized;
+	}
+	public override void OnCritterStillTooCloseToObject(Collider collider) {
+		// Set drift vector away from collider
+		targetDriftVector = ((transform.position - collider.transform.position) + transform.position).normalized * 2;
 	}
 
 	public override Vector3 getRandomSpawnLocation() {

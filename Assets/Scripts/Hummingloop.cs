@@ -38,6 +38,7 @@ public class Hummingloop : Critter {
 	private Vector3 target; // target destination
 	private bool refreshTarget = true; // whether we should get a new target
 	private bool leaving = false; // whether or not the hummingloop is leaving
+	private bool targetWasReset = false;
 
 	// LIFE/DEATH VARIABLES
 	public int survivalTime = 24;
@@ -72,8 +73,19 @@ public class Hummingloop : Critter {
 	
 	// Called once per beat
 	public override void OnCritterBeat() {
+
+		// Track time and refresh the movement target.
+
 		survivalTime -= 1;
 		refreshTarget = true;
+		
+		// Look around if captured.
+		
+		if (Captured) {
+			// Set the target to be something on the same plane as the hummingloop
+			target = transform.position + new Vector3(Random.Range (-1f, 1f), 0, Random.Range (-1f, 1f));
+			targetWasReset = true;
+		}
 	}
 
 	public override void OnCritterSixteenth() {
@@ -101,10 +113,22 @@ public class Hummingloop : Critter {
 				}
 			}
 		}
+
+		// Movement
+
+		if (targetWasReset && leaving) {
+			// Get a target far away
+			target = Random.onUnitSphere * 200;
+			targetWasReset = false;
+		}
 	}
 
 	public override void OnCritterLoop() {
 		hummingloop_idx = 0;
+	}
+
+	public override void OnCritterCapture() {
+
 	}
 	
 	// Update is called once per frame
@@ -159,6 +183,7 @@ public class Hummingloop : Critter {
 			// If too close to player, turn around
 			if (DistanceFromKami <= kami.turnaroundRad && !BeingPulled && survivalTime > 0) {
 				target = (transform.position - kami.transform.position) + transform.position;
+				targetWasReset = true;
 			}
 			
 			// Leave if survivalTime is below zero
@@ -173,14 +198,15 @@ public class Hummingloop : Critter {
 				dying = true;
 			}
 
-			// Smoothly rotate to target
-			// Slerp to facing
-			transform.rotation = Quaternion.Slerp(transform.rotation,
-			                                      Quaternion.LookRotation (target - transform.position),
-			                                      rotSpeed);
 			// Move forward at speed
 			transform.position += transform.forward * speed;
 		}
+		
+		// Smoothly rotate to target
+		// Slerp to facing
+		transform.rotation = Quaternion.Slerp(transform.rotation,
+		                                      Quaternion.LookRotation (target - transform.position),
+		                                      rotSpeed);
 
 		// **************
 		// DEATH BEHAVIOR
@@ -190,6 +216,12 @@ public class Hummingloop : Critter {
 		if (dying) {
 			Destroy(this.gameObject);
 		}
+	}
+
+	public override void OnCritterTooCloseToObject (Collider collider) {
+		// Get new target away from the collider
+		target = (transform.position - collider.transform.position) + transform.position;
+		targetWasReset = true;
 	}
 
 	public override Vector3 getRandomSpawnLocation() {

@@ -73,7 +73,16 @@ public class Kami : MonoBehaviour {
 	// Oculus Toggle
 	public bool oculusEnabled = false;
 
+	// Critter Spawns
+	public Transform[] spawns;
+	public Transform[] crossSpawns;
+
 	void Start() {
+
+		// ********************
+		// AUDIO INITIALIZATION
+		// ********************
+		
 		initDspTime = AudioSettings.dspTime;
 
 		// Audio Latency calculation
@@ -88,15 +97,12 @@ public class Kami : MonoBehaviour {
 		// HUMMINGLOOPS (aka Honkyloops)
 
 		// Hummingloop audio
-		print ("Loading hummingloop audio.");
 		hummingloopAudio = new AudioClip[30];
 		for (int i = 3; i < 29; i++) {
 			hummingloopAudio[i] = (AudioClip)Resources.Load ("Audio/hum_output" + i);
 		}
-		print ("Done loading hummingloop audio.");
 
 		// Hummingloop config
-		print ("Loading hummingloop configs.");
 		hummingloopConfigs = new Hummingloop.HummingloopConfig[30];
 		for (int i = 3; i < 29; i++) {
 			Hummingloop.HummingloopConfig config = new Hummingloop.HummingloopConfig();
@@ -120,20 +126,16 @@ public class Kami : MonoBehaviour {
 			config.pitchRadius = highestPitch - config.middlePitch;
 			hummingloopConfigs[i] = config;
 		}
-		print ("Done loading hummingloop configs.");
 
 		// BOXWORMS (aka Bevelworms)
 
 		// Boxworm audio
-		print ("Loading boxworm audio.");
 		boxwormAudio = new AudioClip[30];
 		for (int i = 3; i < 29; i++) {
 			boxwormAudio[i] = (AudioClip)Resources.Load ("Audio/box_output" + i);
 		}
-		print ("Done loading boxworm audio.");
 
 		// Boxworm config
-		print ("Loading boxworm configs.");
 		boxwormConfigs = new Boxworm.BoxwormConfig[30];
 		for (int i = 3; i < 29; i++) {
 			Boxworm.BoxwormConfig config = new Boxworm.BoxwormConfig();
@@ -169,7 +171,25 @@ public class Kami : MonoBehaviour {
 			}
 			boxwormConfigs[i] = config;
 		}
-		print ("Done loading boxworm configs.");
+		
+		// ********************
+		// SPAWN INITIALIZATION
+		// ********************
+
+		GameObject[] spawnsObj = GameObject.FindGameObjectsWithTag ("CritterSpawn");
+		Transform[] spawnsInit = new Transform[spawnsObj.Length];
+		for (int i = 0; i < spawnsInit.Length; i++) {
+			spawnsInit[i] = spawnsObj[i].transform;
+		}
+		spawns = spawnsInit;
+
+		spawnsObj = GameObject.FindGameObjectsWithTag ("CrossSpawn");
+		spawnsInit = new Transform[spawnsObj.Length];
+		for (int i = 0; i < spawnsInit.Length; i++) {
+			spawnsInit[i] = spawnsObj[i].transform;
+		}
+		crossSpawns = spawnsInit;
+
 	}
 
 	void FixedUpdate(){
@@ -206,6 +226,7 @@ public class Kami : MonoBehaviour {
 		}
 		if (Input.GetKeyDown (createBoxwormKey)) {
 			spawnCritter("boxworm");
+			print ("Spawning Bevelworm");
 		}
 		if (Input.GetKeyDown (createMaracawKey)) {
 			spawnCritter("maracaw");
@@ -220,9 +241,7 @@ public class Kami : MonoBehaviour {
 		// Set the focus based on reticle's target
 		Transform target = reticle.Target;
 		if (target != null) {
-			if (target.parent != null) {
-				focus = target.parent.GetComponent<Critter>();
-			}
+			focus = target.GetComponent<Critter>();
 		} else {
 			focus = null;
 		}
@@ -233,7 +252,6 @@ public class Kami : MonoBehaviour {
 			if (focus != null) {
 				pulling = true;
 				pushPullForce = pushPullForceMultiplier;
-				print ("Pulling on something.");
 			}
 		} else {
 			pulling = false;
@@ -244,7 +262,6 @@ public class Kami : MonoBehaviour {
 			if (focus != null) {
 				pushing = true;
 				pushPullForce = pushPullForceMultiplier;
-				print ("Pushing on something.");
 			}
 		} else {
 			pushing = false;
@@ -276,25 +293,32 @@ public class Kami : MonoBehaviour {
 		if (critterName == "hummingloop") {
 			// Spawn Hummingloop
 			type = hummingloop;
+			location = GetRandomSpawn ();
 		} else if (critterName == "boxworm") {
 			// Spawn Boxworm
 			type = boxworm;
-			rotation = Quaternion.Euler (0, 90, 0);
+			location = GetRandomCrossSpawn();
+			// rotation: face towards the center point, but with zero angle of attack to the horizon.
+			rotation = Quaternion.LookRotation((new Vector3(
+				transform.position.x, location.y, transform.position.z) - location));
 		} else if (critterName == "maracaw") {
 			// Spawn Maracaw
 			type = maracaw;
+			location = GetRandomSpawn();
 		} else if (critterName == "mine") {
 			// Spawn Mine
 			type = mine;
+			location = GetRandomSpawn();
 		} else if (critterName == "oscilloop") {
 			// Spawn Oscilloop
 			type = oscilloop;
 			rotation = Quaternion.Euler (0, 0, 0);
+			location = GetRandomSpawn();
 		}
 		
 		t = Instantiate (type, location, rotation) as Transform;
 		t.GetComponent<Critter>().kami = this;
-		t.position = t.GetComponent<Critter>().getRandomSpawnLocation(); // set position
+		t.position = location;
 		t.parent = transform;
 		
 	}
@@ -338,16 +362,17 @@ public class Kami : MonoBehaviour {
 		return 0;
 	}
 
+	public Vector3 GetRandomSpawn() {
+		Transform spawn = spawns [Random.Range (0, spawns.Length)];
+		return spawn.position;
+	}
+	public Vector3 GetRandomCrossSpawn() {
+		Transform spawn = crossSpawns [Random.Range (0, crossSpawns.Length)];
+		return spawn.position;
+	}
+
 	public bool getFocused(Critter critter) {
 		return critter == focus;
-	}
-
-	public void RegisterCapture(Critter critter) {
-		// k thats nice
-	}
-
-	public void DeregisterCapture(Critter critter) {
-		// mm hmm ok
 	}
 
 	public AudioClip GetHummingloopAudio(int i) {
