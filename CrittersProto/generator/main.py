@@ -20,27 +20,52 @@ import struct
 import audio_player # in progress
 import swarp
 import time
+import uplift
 
 # todo make global
 kSamplingRate = 44100
 kOutputChannels = 2
 
 
+## Interesting midi instrumnts:
+## - 1xx: Goblin
+## - 86: sawtooth
+## - 84: charang
+## - 106: Shamisen high
+## - 128 0 81: triangle
+## - Really fast church bells
 
 # # Follows code to play things out loud
 # # =================================================
 
 # audioPlayer = audio_player.AudioPlayer()
 
-# #newCritter = boxworm.BoxWorm(1)
-# # newCritter = hummingloop.HummingLoop(1)
-# # newCritter = oscilloop.Oscilloop(10)
-# #newCritter = swarp.Swarp(1)
-# newCritter = maracaws.Maracaws(15)
-# #newFrames = newCritter.get_frames()
+# def queueCritterForPlay(aCritter):
+#     newFrames = aCritter.get_frames()
+#     audioPlayer.queueFramesForPlay(newFrames)
 
-# newFrames = newCritter.get_frames()
-# audioPlayer.queueFramesForPlay(newFrames)
+# def queueCrittersForPlay(listOfCritters):
+#     newFrames = []
+#     for critter in listOfCritters:
+#         nextFrames = critter.get_frames()
+#         if len(nextFrames) > len(newFrames):
+#             newFrames = np.pad(newFrames, (0, len(nextFrames) - len(newFrames)), mode="constant")
+#         newFrames = newFrames[0:len(nextFrames)] + nextFrames
+#     audioPlayer.queueFramesForPlay(newFrames)
+
+# # #newCritter = boxworm.BoxWorm(1)
+# # # newCritter = hummingloop.HummingLoop(1)
+# # # newCritter = oscilloop.Oscilloop(10)
+# # newCritter = swarp.Swarp(1)
+# # #newCritter = maracaws.Maracaws(15)
+# # #newFrames = newCritter.get_frames()
+
+# # newFrames = newCritter.get_frames()
+# # newCritter = maracaws.Maracaws(15)
+
+# queueCrittersForPlay([uplift.Uplift(10), uplift.Uplift(3), uplift.Uplift(5), uplift.Uplift(15),uplift.Uplift(2)])
+# #queueCrittersForPlay([swarp.Swarp(1), maracaws.Maracaws(15)])
+# #queueCrittersForPlay([maracaws.Maracaws(15), hummingloop.HummingLoop(2)])
 
 # # wait for stream to finish (5)
 # while audioPlayer.isActive():
@@ -53,18 +78,19 @@ kOutputChannels = 2
 #Uncomment for code to write things into wav files or config files
 #=============================================================
 
-for currentSeed in xrange(1, 31):
+for currentSeed in xrange(1, 11):
     # UNCOMMENT FOR WAV FILE WRITING
     # set up wave file writing
-    waver = wave.open("wav/maracaws_output" + str(currentSeed) + ".wav", 'wb')
+    waver = wave.open("wav/uplift_output" + str(currentSeed) + ".wav", 'wb')
     waver.setnchannels(kOutputChannels) #kOutputChannels
     waver.setsampwidth(2) # let's convert things into 16 bit integer format
     waver.setframerate(kSamplingRate)
 
     #newCritter = hummingloop.HummingLoop(currentSeed)
     #newCritter = boxworm.BoxWorm(currentSeed)
-    newCritter = maracaws.Maracaws(currentSeed)
+    #newCritter = maracaws.Maracaws(currentSeed)
     #newCritter = mine.Mine(currentSeed)
+    newCritter = uplift.Uplift(currentSeed)
     newFrames = newCritter.get_frames()    
     data = newFrames * np.iinfo(np.int16).max
     data = data.astype(np.int16)
@@ -74,18 +100,19 @@ for currentSeed in xrange(1, 31):
     waver.writeframes(packedData)
     waver.close()
 
-    ## UNCOMMENT FOR CONFIG FILE WRITING
-    # #newCritter = boxworm.BoxWorm(currentSeed)
-    # #newCritter = hummingloop.HummingLoop(currentSeed)
-    # newCritter = maracaws.Maracaws(currentSeed)
+    # UNCOMMENT FOR CONFIG FILE WRITING
+    #newCritter = boxworm.BoxWorm(currentSeed)
+    #newCritter = hummingloop.HummingLoop(currentSeed)
+    #newCritter = maracaws.Maracaws(currentSeed)
+    #newCritter = swarp.Swarp(1)
 
-    # # Output oscillation configuration file.
-    # # This will be used by Unity to synchronize
-    # # the critter's motion with the sound of the
-    # # .wav file.
-    # config_file = open("wav/maracaws_output" + str(currentSeed) + "_config.txt", "wb")
-    # config_contents = str(newCritter.get_config()) + "\n"
-    # config_file.write(config_contents)
-    # config_file.close()
-    # print "Config file written and closed."
+    # Output oscillation configuration file.
+    # This will be used by Unity to synchronize
+    # the critter's motion with the sound of the
+    # .wav file.
+    config_file = open("wav/uplift_output" + str(currentSeed) + "_config.txt", "wb")
+    config_contents = str(newCritter.get_config()) + "\n"
+    config_file.write(config_contents)
+    config_file.close()
+    print "Config file written and closed."
     

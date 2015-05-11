@@ -28,13 +28,14 @@ kDefaultNumNotesPerBeat = 4
 # to do that.
 class BaseGenerator(object):
 
-    def __init__(self, seed):
+    def __init__(self, seed, synthName='../FluidR3_GM.sf2'):
         random.seed(seed)
 
-        self.synth = Synth('../FluidR3_GM.sf2')
-        self.set_cpb(10, 128, 0)
+        self.synth = Synth(synthName)
+        self.set_cpb(10, 0, 0)
         self.cur_idx = 0
         self.set_num_notes_per_beat(kDefaultNumNotesPerBeat)
+        #self.synth.set_reverb_on(True)
 
     # Subclasses should override this
     # can return an array of scalars, or an
@@ -135,7 +136,7 @@ class BaseGenerator(object):
         noteset, note_duration = self._get_next_noteset()
         if isinstance(noteset, list):
             for value in noteset:
-                pitch = self.key + value
+                pitch = value
                 # play note on:
                 noteVelocity = self.get_note_velocity()
                 self.synth.noteon(self.channel, pitch, int(noteVelocity))
@@ -156,7 +157,7 @@ class BaseGenerator(object):
     def _noteoff(self, tick, noteset):
         if isinstance(noteset, list):
             for value in noteset:
-                pitch = self.key + value
+                pitch = value
                 self.synth.noteoff(self.channel, pitch)
         else:
             self.synth.noteoff(self.channel, noteset)

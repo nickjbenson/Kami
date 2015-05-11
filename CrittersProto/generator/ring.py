@@ -1,8 +1,6 @@
 ##################################################################
 #
-# swarp.py
-# A harp like school of fish/creature/thing that makes shimmering
-# noises
+# A simple school bell
 #
 # benchan
 #
@@ -14,7 +12,7 @@ from baseGenerator import BaseGenerator
 
 NOTES_PER_BEAT = 8
 
-class Swarp(BaseGenerator):
+class Ring(BaseGenerator):
     def __init__(self, seed):
         BaseGenerator.__init__(self, seed)
         # Notes
