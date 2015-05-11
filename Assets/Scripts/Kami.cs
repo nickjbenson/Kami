@@ -55,6 +55,7 @@ public class Kami : MonoBehaviour {
 	private Boxworm.BoxwormConfig[] boxwormConfigs;
 	// Maracaws
 	private AudioClip[] maracawsAudio;
+	private Maracaws.MaracawsConfig[] maracawsConfigs;
 	// Mine
 	private AudioClip[] mineAudio;
 
@@ -190,6 +191,23 @@ public class Kami : MonoBehaviour {
 			maracawsAudio [i] = (AudioClip)Resources.Load ("Audio/maracaws_output" + i);
 		}
 		print ("Done loading maracaws audio.");
+
+		// Maracaws config
+		print ("Loading maracaws configs.");
+		maracawsConfigs = new Maracaws.MaracawsConfig[31];
+		for (int i = 1; i <= 30; i++) {
+			Maracaws.MaracawsConfig config = new Maracaws.MaracawsConfig ();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/maracaws_output" + i + "_config");
+			var result = textConfig.text.Split (' ');
+			int j = 0;
+			config.onoff = new int[result.Length];
+			foreach (string pitchStr in result) {
+				config.onoff [j] = int.Parse (pitchStr);
+				j++;
+			}
+			maracawsConfigs [i] = config;
+		}
+		print ("Done loading maracaws configs.");
 
 		// MINE
 		
@@ -395,6 +413,9 @@ public class Kami : MonoBehaviour {
 	}
 	public AudioClip GetMaracawsAudio(int i) {
 		return maracawsAudio [i];
+	}
+	public Maracaws.MaracawsConfig GetMaracawsConfig(int i) {
+		return maracawsConfigs [i];
 	}
 	public AudioClip GetMineAudio(int i) {
 		return mineAudio [i];
