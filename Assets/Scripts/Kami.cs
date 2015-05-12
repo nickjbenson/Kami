@@ -402,6 +402,32 @@ public class Kami : MonoBehaviour {
 
 	}
 
+	public void spawnCritter(Critter critter, Vector3 location) {
+		Quaternion rotation;
+		Transform t;
+
+		rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
+
+		if (critter.GetType() == hummingloop.GetComponent<Hummingloop>().GetType()) {
+			// It was a hummingloop
+		}
+		if (critter.GetType () == boxworm.GetComponent<Boxworm>().GetType ()) {
+			// It was a boxworm
+			// rotation: face towards the center point, but with zero angle of attack to the horizon.
+			rotation = Quaternion.LookRotation((new Vector3(
+				transform.position.x, location.y, transform.position.z) - location));
+		}
+		if (critter.GetType () == maracaw.GetComponent<Maracaws>().GetType ()) {
+			// It was a maracaw
+		}
+
+		t = Instantiate (critter.transform, location, rotation) as Transform;
+		t.GetComponent<Critter>().kami = this;
+		t.position = location;
+		t.parent = transform;
+
+	}
+
 	public void spawnCritter(string critterName) {
 
 		Transform type;
