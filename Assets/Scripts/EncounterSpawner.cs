@@ -170,6 +170,12 @@ public class EncounterSpawner : MonoBehaviour {
 						  new int[] {1, 1, 2, 2, 3, 1},
 						  SpawnType.TREETOPS_OR_HILLS);
 		purpleSpringSpawns.Add (tempS);
+		// some boxworms from the distance
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.boxworm.GetComponent<Critter>()},
+						  new int[] {1, 1, 2, 4, 3, 2, 4, 1},
+						  SpawnType.DISTANCE);
+		purpleSpringSpawns.Add (tempS);
 		paletteDict.Add ("purple spring", purpleSpringSpawns);
 
 		// Spawn measure waiting time default initialization.
