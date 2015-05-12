@@ -7,6 +7,8 @@ public class Angel : Critter {
 	bool active = false;
 	public float angularSpeed;
 	private float rotatedSoFar = 0;
+	private Critter.SparseConfig config;
+	private int angel_idx = 0;
 	
 	// MOVEMENT VARIABLES
 	public float speed = 0.001f; // Movement speed towards target
@@ -23,10 +25,10 @@ public class Angel : Critter {
 	}
 	
 	public override AudioClip GetCritterAudio() {
-		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
-		AudioClip clip = kami.GetMineAudio(idx);
-		//TODO: replace with actual clip
-		//TODO: map color to pitch, using config
+//		int idx = (int) Mathf.Ceil(Random.Range (1, 11));
+		int idx = 2;
+		AudioClip clip = kami.GetAngelAudio(idx);
+		config = kami.GetAngelConfig (idx);
 		return clip;
 	}
 	
@@ -36,16 +38,20 @@ public class Angel : Critter {
 	
 	public override void OnCritterBeat() {
 		survivalTime -= 1;
-		// TODO: check config to set active
+	}
+
+	public override void OnCritterSixteenth(){
+		if (StartedPlaying) {
+			print(sixteenthCount);
+			if (config.hits [angel_idx]) {
+				active = true;
+			}
+			angel_idx = (angel_idx + 1) % config.hits.Length;
+		}
 	}
 	
 	public override void PostCritterUpdate() {
-		
-		// TODO: get rid of this once you've implemented beat matching
-		if (Input.GetKey ("z")) {
-			active = true;
-		}
-		
+
 		// *****************
 		// MOVEMENT BEHAVIOR
 		// *****************

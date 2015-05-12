@@ -20,10 +20,14 @@ public class Kami : MonoBehaviour {
 	private double nextSixteenth = 0;
 
 	public string createHummingloopKey = "1"; // Key to press to spawn a Hummingloop
-	public string createBoxwormKey = "2"; // Key to press to spawn a Hummingloop
-	public string createMaracawKey = "3"; // Key to press to spawn a Hummingloop
-	public string createMineKey = "4"; // Key to press to spawn a Hummingloop
-	public string createOscilloopKey = "5"; // Key to press to spawn a Hummingloop
+	public string createBoxwormKey = "2";
+	public string createMaracawKey = "3"; 
+	public string createMineKey = "4"; 
+	public string createOscilloopKey = "5";
+	public string createShawarmaKey = "6";
+	public string createTomTomKey = "7";
+	public string createClangKey = "8";
+	public string createAngelKey = "9";
 	public string pullKey = "c"; // Key for pulling on critters
 	public string pushKey = "x"; // Key for pushing on critters
 
@@ -32,6 +36,9 @@ public class Kami : MonoBehaviour {
 	public Transform maracaw; // maracaw prefab
 	public Transform mine; // mine prefab
 	public Transform oscilloop; // oscilloop prefab
+	public Transform tomtom;
+	public Transform clang;
+	public Transform angel;
 
 	// CRITTER ACTION RADII
 	// No-Go / turnaround radius
@@ -58,6 +65,17 @@ public class Kami : MonoBehaviour {
 	private Maracaws.MaracawsConfig[] maracawsConfigs;
 	// Mine
 	private AudioClip[] mineAudio;
+	// Shawarma
+	private AudioClip[] shawarmaAudio;
+	// TomTom
+	private AudioClip[] tomtomAudio;
+	private Critter.SparseConfig[] tomtomConfigs;
+	// Clang
+	private AudioClip[] clangAudio;
+	private Critter.SparseConfig[] clangConfigs;
+	// Angel
+	private AudioClip[] angelAudio;
+	private Critter.SparseConfig[] angelConfigs;
 
 	// Oculus Reticle
 	public OculusReticle reticle;
@@ -213,7 +231,62 @@ public class Kami : MonoBehaviour {
 		for (int i = 1; i <= 8; i++) {
 			mineAudio [i] = (AudioClip)Resources.Load ("Audio/mine_output" + i);
 		}
+
+		// TOMTOM
+
+		// TomTom audio
+		tomtomAudio = new AudioClip[2];
+		for (int i = 1; i <= 1; i++) {
+			tomtomAudio [i] = (AudioClip)Resources.Load ("Audio/ring_output" + i);
+		}
+
+		// TomTom config
+		tomtomConfigs = new Critter.SparseConfig[2];
+		for (int i = 1; i <= 1; i++) {
+			Critter.SparseConfig config = new Critter.SparseConfig ();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/ring_output" + i + "_config");
+			var result = textConfig.text.Split (' ');
+			int j = 0;
+			config.hits = new bool[result.Length];
+			foreach (string pitchStr in result) {
+				if (pitchStr.Equals("0")){
+					config.hits[j] = false;
+				} else {
+					config.hits [j] = true;
+					config.pitch = int.Parse (pitchStr);
+				}
+				j++;
+			}
+			tomtomConfigs [i] = config;
+		}
+
+		// ANGEL
 		
+		// Angel audio
+		angelAudio = new AudioClip[11];
+		for (int i = 1; i <= 10; i++) {
+			angelAudio [i] = (AudioClip)Resources.Load ("Audio/uplift_output" + i);
+		}
+		
+		// Angel config
+		angelConfigs = new Critter.SparseConfig[11];
+		for (int i = 1; i <= 10; i++) {
+			Critter.SparseConfig config = new Critter.SparseConfig ();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/uplift_output" + i + "_config");
+			var result = textConfig.text.Split (' ');
+			int j = 0;
+			config.hits = new bool[result.Length];
+			foreach (string pitchStr in result) {
+				if (pitchStr.Equals("-1")){
+					config.hits[j] = false;
+				} else {
+					config.hits [j] = true;
+				}
+				j++;
+			}
+			angelConfigs [i] = config;
+		}
+
 		// ********************
 		// SPAWN INITIALIZATION
 		// ********************
@@ -278,6 +351,15 @@ public class Kami : MonoBehaviour {
 		}
 		if (Input.GetKeyDown (createOscilloopKey)) {
 			spawnCritter("oscilloop");
+		}
+		if (Input.GetKeyDown (createTomTomKey)) {
+			spawnCritter ("tomtom");
+		}
+		if (Input.GetKeyDown (createClangKey)) {
+			spawnCritter ("clang");
+		}
+		if (Input.GetKeyDown (createAngelKey)) {
+			spawnCritter ("angel");
 		}
 
 		// Set the focus based on reticle's target
@@ -365,23 +447,33 @@ public class Kami : MonoBehaviour {
 		} else if (critterName == "boxworm") {
 			// Spawn Boxworm
 			type = boxworm;
-			location = GetRandomCrossSpawn();
+			location = GetRandomCrossSpawn ();
 			// rotation: face towards the center point, but with zero angle of attack to the horizon.
-			rotation = Quaternion.LookRotation((new Vector3(
+			rotation = Quaternion.LookRotation ((new Vector3 (
 				transform.position.x, location.y, transform.position.z) - location));
 		} else if (critterName == "maracaw") {
 			// Spawn Maracaw
 			type = maracaw;
-			location = GetRandomSpawn();
+			location = GetRandomSpawn ();
 		} else if (critterName == "mine") {
 			// Spawn Mine
 			type = mine;
-			location = GetRandomSpawn();
+			location = GetRandomSpawn ();
 		} else if (critterName == "oscilloop") {
 			// Spawn Oscilloop
 			type = oscilloop;
 			rotation = Quaternion.Euler (0, 0, 0);
-			location = GetRandomSpawn();
+			location = GetRandomSpawn ();
+		} else if (critterName == "tomtom") {
+			type = tomtom;
+			location = GetRandomSpawn ();
+		} else if (critterName == "clang") {
+			type = clang;
+			location = GetRandomSpawn ();
+		} else if (critterName == "angel") {
+			type = angel;
+			rotation = Quaternion.Euler (0, 0, 0);
+			location = GetRandomSpawn ();
 		}
 		
 		t = Instantiate (type, location, rotation) as Transform;
@@ -464,6 +556,24 @@ public class Kami : MonoBehaviour {
 	}
 	public AudioClip GetMineAudio(int i) {
 		return mineAudio [i];
+	}
+	public AudioClip GetTomTomAudio(int i){
+		return tomtomAudio [i];
+	}
+	public Critter.SparseConfig GetTomTomConfig(int i){
+		return tomtomConfigs [i];
+	}
+	public AudioClip GetClangAudio(int i){
+		return clangAudio [i];
+	}
+	public Critter.SparseConfig GetClangConfig(int i){
+		return clangConfigs [i];
+	}
+	public AudioClip GetAngelAudio(int i){
+		return angelAudio [i];
+	}
+	public Critter.SparseConfig GetAngelConfig(int i){
+		return angelConfigs [i];
 	}
 	
 }

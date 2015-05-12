@@ -365,4 +365,9 @@ public abstract class Critter : MonoBehaviour {
 	/// <returns>The random spawn location.</returns>
 	public abstract Vector3 getRandomSpawnLocation();
 
+	public class SparseConfig {
+
+		public bool[] hits; //true iff hit
+		public int pitch = 0; //only used for some critters
+	}
 }

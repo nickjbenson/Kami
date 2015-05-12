@@ -165,7 +165,14 @@ class BaseGenerator(object):
 
     # Used by Main
     def get_config(self):
-        return " ".join(str(note) for note in self.get_notes_list())
+        notesToConfig = []
+        for note in self.get_notes_list():
+            if isinstance(note, list):
+                notesToConfig.append(str(sum(note)))
+            else:
+                notesToConfig.append(str(note))
+
+        return " ".join(notesToConfig)
 
 
 
