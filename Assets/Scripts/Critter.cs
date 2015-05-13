@@ -316,13 +316,11 @@ public abstract class Critter : MonoBehaviour {
 
 		// Add avoidance force to acceleration vector
 		avoidanceAccelVector = curAvoidObstacleAccelVect;
-		print ("curAvoidVect was " + curAvoidObstacleAccelVect);
 		// (And reset the avoidance force)
 		curAvoidObstacleAccelVect = Vector3.zero;
 
 		// Change velocity by acceleration vector * time
 		avoidanceVelocity += avoidanceAccelVector * Time.deltaTime;
-		print ("avoidanceVelocity was " + (avoidanceAccelVector * Time.deltaTime));
 		
 		// Cap velocity if necessary
 		if (avoidanceVelocity.sqrMagnitude > maxAvoidanceSpeed * maxAvoidanceSpeed) {
@@ -331,7 +329,6 @@ public abstract class Critter : MonoBehaviour {
 		
 		// Change position by velocity vector * time
 		transform.position += avoidanceVelocity * Time.deltaTime;
-		print ("Moved the " + GetType () + " by " + (avoidanceVelocity * Time.deltaTime));
 		
 		// ***************
 		// SUBCLASS UPDATE

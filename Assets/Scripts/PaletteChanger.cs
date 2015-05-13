@@ -65,7 +65,7 @@ public class PaletteChanger : MonoBehaviour {
 	private Color curBGColor;
 	private bool colorChanging;
 	private float timeSinceChange = 0f;
-	private float paletteChangeSpeed = 0.15f;
+	private float paletteChangeSpeed = 0.03f;
 	private AnimationCurve ease = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
 	public void Start() {
