@@ -372,14 +372,14 @@ public class Kami : MonoBehaviour {
 		// Thundercloud audio
 		thundercloudAudio = new AudioClip[6];
 		for (int i = 1; i <= 5; i++) {
-			thundercloudAudio [i] = (AudioClip)Resources.Load ("Audio/thundercloud_output" + i);
+			thundercloudAudio [i] = (AudioClip)Resources.Load ("Audio/thunder_output" + i);
 		}
 		
 		// Thundercloud config
-		thundercloudConfigs = new Critter.SparseConfig[11];
+		thundercloudConfigs = new Critter.SparseConfig[6];
 		for (int i = 1; i <= 5; i++) {
 			Critter.SparseConfig config = new Critter.SparseConfig ();
-			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/thundercloud_output" + i + "_config");
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/thunder_output" + i + "_config");
 			var result = textConfig.text.Trim ().Split (' ');
 			int j = 0;
 			config.hits = new bool[result.Length];
@@ -406,6 +406,7 @@ public class Kami : MonoBehaviour {
 		spawns = spawnsInit;
 		
 		spawnsObj = GameObject.FindGameObjectsWithTag ("CrossSpawn");
+		print (spawnsObj);
 		spawnsInit = new Transform[spawnsObj.Length];
 		for (int i = 0; i < spawnsInit.Length; i++) {
 			spawnsInit[i] = spawnsObj[i].transform;
