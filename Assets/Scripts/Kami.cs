@@ -406,7 +406,6 @@ public class Kami : MonoBehaviour {
 		spawns = spawnsInit;
 		
 		spawnsObj = GameObject.FindGameObjectsWithTag ("CrossSpawn");
-		print (spawnsObj);
 		spawnsInit = new Transform[spawnsObj.Length];
 		for (int i = 0; i < spawnsInit.Length; i++) {
 			spawnsInit[i] = spawnsObj[i].transform;
@@ -530,7 +529,13 @@ public class Kami : MonoBehaviour {
 			// It was a maracaw
 		} else if (critterType == oscilloop.GetComponent<Oscilloop> ().GetType ()) {
 			// Set rotation to be upright
-			rotation = Quaternion.Euler (new Vector3(0, 0, 0));
+			rotation = Quaternion.Euler (new Vector3 (0, 0, 0));
+		} else if (critterType == angel.GetComponent<Angel> ().GetType ()) {
+			// Set rotation to be upright
+			rotation = Quaternion.Euler (new Vector3 (0, 0, 0));
+		} else if (critterType == thundercloud.GetComponent<ThunderCloud> ().GetType ()) {
+			// Set rotation to be upright
+			rotation = Quaternion.Euler (new Vector3 (0, 0, 0));
 		}
 
 		t = Instantiate (critter.transform, location, rotation) as Transform;

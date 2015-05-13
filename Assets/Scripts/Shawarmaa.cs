@@ -11,7 +11,7 @@ public class Shawarmaa : Critter {
 	private int shawarma_idx = 5;
 	
 	// MOVEMENT VARIABLES
-	public float speed = 0.001f; // Movement speed towards target
+	public float speed = 0.05f; // Movement speed towards target
 	private Vector3 target; // target destination
 	private bool refreshTarget = true; // whether we should get a new target
 	private bool leaving = false; // whether or not the mine is leaving
@@ -79,7 +79,7 @@ public class Shawarmaa : Critter {
 			// Leave if survivalTime is below zero
 			if (survivalTime <= 0 && !leaving) {
 				leaving = true;
-				speed = 0.05f;
+				speed = 0.1f;
 			}
 			
 			// Start dying past the death radius

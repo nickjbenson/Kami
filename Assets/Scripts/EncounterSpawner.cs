@@ -225,10 +225,10 @@ public class EncounterSpawner : MonoBehaviour {
 		new int[] {1, 1, 2, 1},
 		SpawnType.HILLS);
 		dazzleNightSpawns.Add (tempS);
-		// a few (3-5) angels
+		// one angel, because they overlap for some reason
 		tempS = new Spawn (this,
 		                   new Critter[] {kami.angel.GetComponent<Critter> ()},
-		new int[] {3, 2, 4, 1, 5, 1},
+		new int[] {1, 1},
 		SpawnType.HILLS);
 		dazzleNightSpawns.Add (tempS);
 
@@ -280,6 +280,11 @@ public class EncounterSpawner : MonoBehaviour {
 		                   new Critter[] {kami.mine.GetComponent<Critter> ()},
 		new int[] {1, 5, 2, 3, 3, 1},
 		SpawnType.HILLS);
+		// thunderclouds!
+		tempS = new Spawn (this,
+		                   new Critter[] {kami.thundercloud.GetComponent<Critter> ()},
+		new int[] {1, 5, 2, 1},
+		SpawnType.TREETOPS);
 		sunsetDazeSpawns.Add(tempS);
 
 		// Finalize Sunset Daze
