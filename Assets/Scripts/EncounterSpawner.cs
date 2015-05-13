@@ -62,11 +62,11 @@ public class Spawn {
 				possibleCritterAmounts.Add(amount);
 			}
 		}
-		EncounterSpawner.print ("Possible critter amounts: " + possibleCritterAmounts);
+		//EncounterSpawner.print ("Possible critter amounts: " + possibleCritterAmounts);
 
 		// Populate possible spawn locations
 		possibleSpawnLocations = spawner.GetSpawnLocations (spawnType);
-		EncounterSpawner.print ("Possible spawn locations: " + possibleSpawnLocations);
+		//EncounterSpawner.print ("Possible spawn locations: " + possibleSpawnLocations);
 
 	}
 
@@ -147,10 +147,17 @@ public class EncounterSpawner : MonoBehaviour {
 
 	void Start () {
 
-		// Initialize all possible palette spawns.
 
-		// Purple Spring
+		// *******************
+		// ENCOUNTERS / SPAWNS
+		// *******************
+		// Initialize all possible palette spawns.
+		
 		Spawn tempS;
+
+		// *************
+		// Purple Spring
+		// *************
 		List<Spawn> purpleSpringSpawns = new List<Spawn>();
 		// a few (1-3) hummingloops
 		tempS = new Spawn(this,
@@ -162,21 +169,105 @@ public class EncounterSpawner : MonoBehaviour {
 		tempS = new Spawn(this,
 		                  new Critter[] {kami.maracaw.GetComponent<Critter>()},
 						  new int[] {1, 2, 2, 4, 3, 1, 4, 1},
-						  SpawnType.TREETOPS_OR_HILLS);
-		purpleSpringSpawns.Add (tempS);
-		// some mines from the hills
-		tempS = new Spawn(this,
-		                  new Critter[] {kami.mine.GetComponent<Critter>()},
-						  new int[] {1, 1, 2, 2, 3, 1},
-						  SpawnType.TREETOPS_OR_HILLS);
+		SpawnType.TREETOPS_OR_HILLS);
 		purpleSpringSpawns.Add (tempS);
 		// some boxworms from the distance
 		tempS = new Spawn(this,
 		                  new Critter[] {kami.boxworm.GetComponent<Critter>()},
-						  new int[] {1, 1, 2, 4, 3, 2, 4, 1},
+						  new int[] {1, 1, 2, 1},
 						  SpawnType.DISTANCE);
 		purpleSpringSpawns.Add (tempS);
+
+		// Finalize Purple Spring spawns
 		paletteDict.Add ("purple spring", purpleSpringSpawns);
+
+		// ************
+		// Dazzle Night
+		// ************
+		List<Spawn> dazzleNightSpawns = new List<Spawn> ();
+		// some boxworms from the distance
+		tempS = new Spawn(this,
+		                  	new Critter[] {kami.boxworm.GetComponent<Critter>()},
+							new int[] {1, 1, 2, 3, 3, 2, 4, 1},
+							SpawnType.DISTANCE);
+		dazzleNightSpawns.Add (tempS);
+		// an oscilloop from the distance
+		tempS = new Spawn(this,
+		                  	new Critter[] {kami.oscilloop.GetComponent<Critter>()},
+							new int[] {1, 1},
+							SpawnType.DISTANCE);
+		dazzleNightSpawns.Add (tempS);
+		// some maracaws from the hills
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.maracaw.GetComponent<Critter>()},
+						  new int[] {1, 1, 2, 2, 3, 1},
+						  SpawnType.TREETOPS_OR_HILLS);
+		dazzleNightSpawns.Add (tempS);
+		// some MORE maracaws from the hills (makes oscilloops rarer)
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.maracaw.GetComponent<Critter>()},
+							new int[] {1, 1, 2, 2, 3, 1},
+							SpawnType.TREETOPS_OR_HILLS);
+		dazzleNightSpawns.Add (tempS);
+		// some MORE boxworms from the distance (makes oscilloops rarer)
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.boxworm.GetComponent<Critter>()},
+		new int[] {1, 1, 2, 3, 3, 2, 4, 1},
+		SpawnType.DISTANCE);
+		dazzleNightSpawns.Add (tempS);
+
+		// Finalize Dazzle Night spawns
+		paletteDict.Add ("dazzle night", dazzleNightSpawns);
+
+		// ***********
+		// Sunset Daze
+		// ***********
+		List<Spawn> sunsetDazeSpawns = new List<Spawn> ();
+		// 1-2 hummingloops in the treetops/hills
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.hummingloop.GetComponent<Critter>()},
+							new int[] {1, 1, 2, 1},
+							SpawnType.TREETOPS_OR_HILLS);
+		purpleSpringSpawns.Add (tempS);
+		// 1-2 MORE hummingloops in the treetops/hills (oscilloops rarer)
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.hummingloop.GetComponent<Critter>()},
+		new int[] {1, 1, 2, 1},
+		SpawnType.TREETOPS_OR_HILLS);
+		purpleSpringSpawns.Add (tempS);
+		// 1-2 MORE hummingloops in the treetops/hills (oscilloops rarer)
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.hummingloop.GetComponent<Critter>()},
+		new int[] {1, 1, 2, 1},
+		SpawnType.TREETOPS_OR_HILLS);
+		purpleSpringSpawns.Add (tempS);
+		// an oscilloop from the distance
+		tempS = new Spawn(this,
+		                  new Critter[] {kami.oscilloop.GetComponent<Critter>()},
+		new int[] {1, 1},
+		SpawnType.DISTANCE);
+		dazzleNightSpawns.Add (tempS);
+		// some mines in the hills
+		tempS = new Spawn (this,
+		                   new Critter[] {kami.mine.GetComponent<Critter> ()},
+		new int[] {1, 5, 2, 3, 3, 1},
+		SpawnType.HILLS);
+		sunsetDazeSpawns.Add(tempS);
+		// some MORE mines in the hills (rarer oscilloops)
+		tempS = new Spawn (this,
+		                   new Critter[] {kami.mine.GetComponent<Critter> ()},
+		new int[] {1, 5, 2, 3, 3, 1},
+		SpawnType.HILLS);
+		sunsetDazeSpawns.Add(tempS);
+		// some MORE mines in the hills (rarer oscilloops)
+		tempS = new Spawn (this,
+		                   new Critter[] {kami.mine.GetComponent<Critter> ()},
+		new int[] {1, 5, 2, 3, 3, 1},
+		SpawnType.HILLS);
+		sunsetDazeSpawns.Add(tempS);
+
+		// Finalize Sunset Daze
+		paletteDict.Add ("sunset daze", sunsetDazeSpawns);
 
 		// Spawn measure waiting time default initialization.
 		if (possibleMeasureWaitTimes.Count == 0) {
@@ -190,7 +281,7 @@ public class EncounterSpawner : MonoBehaviour {
 		// ***************************
 		// AUDIO TIMING INITIALIZATION
 		// ***************************
-		// Blatantly copied from Critter
+		// Shamelessly copied from Critter
 		
 		initTime = KamiTime;
 		
@@ -272,17 +363,13 @@ public class EncounterSpawner : MonoBehaviour {
 
 	public void DoRandomSpawn(string currentPalette) {
 
-		if (currentPalette == "purple spring") {
-
-			List<Spawn> possibleSpawns = paletteDict [currentPalette];
-			
-			Spawn toSpawn = possibleSpawns [Random.Range (0, possibleSpawns.Count)];
-			CritterSpawnData spawnData = toSpawn.SpawnCritters ();
-			
-			for (int i = 0; i < spawnData.critters.Length; i++) {
-				kami.spawnCritter (spawnData.critters[i], spawnData.positions[i]);
-			}
-
+		List<Spawn> possibleSpawns = paletteDict [currentPalette];
+		
+		Spawn toSpawn = possibleSpawns [Random.Range (0, possibleSpawns.Count)];
+		CritterSpawnData spawnData = toSpawn.SpawnCritters ();
+		
+		for (int i = 0; i < spawnData.critters.Length; i++) {
+			kami.spawnCritter (spawnData.critters[i], spawnData.positions[i]);
 		}
 
 	}

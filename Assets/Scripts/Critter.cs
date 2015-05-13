@@ -34,6 +34,15 @@ public abstract class Critter : MonoBehaviour {
 	public int beatsToLoop;
 	protected double loopTime;
 	public float timeSinceLastLoop = 0;
+
+	// AVOIDING LEVEL OBSTACLES
+
+	private Vector3 avoidanceAccelVector = Vector3.zero;
+	private Vector3 avoidanceVelocity = Vector3.zero;
+	private float maxAvoidanceSpeed = 5f;
+	private float avoidObstacleForce = 50f;
+	private float velocityDecay = 0.25f;
+	private Vector3 curAvoidObstacleAccelVect = Vector3.zero;
 	
 	AudioSource[] sources;
 	private int soundIndex = 0;
@@ -67,6 +76,11 @@ public abstract class Critter : MonoBehaviour {
 	public float DistanceFromKami {
 		get {
 			return distanceFromKami - critterRadius;
+		}
+	}
+	public float CenterDistanceFromKami {
+		get {
+			return distanceFromKami;
 		}
 	}
 	
@@ -220,6 +234,9 @@ public abstract class Critter : MonoBehaviour {
 						// was scheduled to start here, so set the boolean
 						startedPlaying = true;
 					}
+
+					// Measure Event.
+					OnCritterMeasure();
 				}
 
 				if (startedPlaying && beatCountForLooping % beatsToLoop == 0) { // Loop.
@@ -287,6 +304,34 @@ public abstract class Critter : MonoBehaviour {
 		} else {
 			halo.color = Color.white;
 		}
+
+		// ***************
+		// STAGE AVOIDANCE
+		// ***************
+		
+		// Decay avoidanceVelocity over time if not avoiding stage
+		if (curAvoidObstacleAccelVect == Vector3.zero) {
+			avoidanceVelocity *= velocityDecay * Time.deltaTime;
+		}
+
+		// Add avoidance force to acceleration vector
+		avoidanceAccelVector = curAvoidObstacleAccelVect;
+		print ("curAvoidVect was " + curAvoidObstacleAccelVect);
+		// (And reset the avoidance force)
+		curAvoidObstacleAccelVect = Vector3.zero;
+
+		// Change velocity by acceleration vector * time
+		avoidanceVelocity += avoidanceAccelVector * Time.deltaTime;
+		print ("avoidanceVelocity was " + (avoidanceAccelVector * Time.deltaTime));
+		
+		// Cap velocity if necessary
+		if (avoidanceVelocity.sqrMagnitude > maxAvoidanceSpeed * maxAvoidanceSpeed) {
+			avoidanceVelocity = avoidanceVelocity.normalized * maxAvoidanceSpeed;
+		}
+		
+		// Change position by velocity vector * time
+		transform.position += avoidanceVelocity * Time.deltaTime;
+		print ("Moved the " + GetType () + " by " + (avoidanceVelocity * Time.deltaTime));
 		
 		// ***************
 		// SUBCLASS UPDATE
@@ -315,15 +360,20 @@ public abstract class Critter : MonoBehaviour {
 	public abstract int GetCritterBeatsToLoop();
 	
 	/// <summary>
+	/// Called once every sixteenth note.
+	/// </summary>
+	public virtual void OnCritterSixteenth() { }
+	
+	/// <summary>
 	/// To be overloaded by implemented critters.
 	/// Called once per beat.
 	/// </summary>
 	public virtual void OnCritterBeat() { }
-
+	
 	/// <summary>
-	/// Called once every sixteenth note.
+	/// Called once per measure.
 	/// </summary>
-	public virtual void OnCritterSixteenth() { }
+	public virtual void OnCritterMeasure() { }
 
 	/// <summary>
 	/// Called every time the creature's audio
@@ -338,7 +388,10 @@ public abstract class Critter : MonoBehaviour {
 	/// Called when the critter is too close to a colliding object.
 	/// </summary>
 	/// <param name="collider">The collider of the object.</param>
-	public virtual void OnCritterTooCloseToObject(Collider collider) { }
+	public virtual void OnCritterTooCloseToObject(Collider collider) {
+		// Be pushed away from the offending object
+		curAvoidObstacleAccelVect = (transform.position - collider.transform.position).normalized * avoidObstacleForce;
+	}
 
 	public void OnTriggerStay(Collider collider) {
 		OnCritterStillTooCloseToObject (collider);
@@ -347,7 +400,10 @@ public abstract class Critter : MonoBehaviour {
 	/// Called when the critter stays too close to a colliding object.
 	/// </summary>
 	/// <param name="collider">The collider of the object.</param>
-	public virtual void OnCritterStillTooCloseToObject(Collider collider) { }
+	public virtual void OnCritterStillTooCloseToObject(Collider collider) {
+		// Continue to be pushed away from the offending object
+		curAvoidObstacleAccelVect = (transform.position - collider.transform.position).normalized * avoidObstacleForce;
+	}
 
 	/// <summary>
 	/// Called when the critter is captured.

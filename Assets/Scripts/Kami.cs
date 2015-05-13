@@ -4,6 +4,9 @@ using System.Collections;
 /// The parent (and creator) of all critters in the world. Kami is the one that instantiates new critters into the
 /// world.
 /// Critters get globalTempo and globalKey from Kami.
+using System.Text.RegularExpressions;
+
+
 public class Kami : MonoBehaviour {
 
 	// Global music configuration
@@ -65,6 +68,9 @@ public class Kami : MonoBehaviour {
 	private Maracaws.MaracawsConfig[] maracawsConfigs;
 	// Mine
 	private AudioClip[] mineAudio;
+	// Oscilloop
+	private AudioClip[] oscilloopAudio;
+	private Oscilloop.OscilloopConfig[] oscilloopConfigs;
 	// Shawarma
 	private AudioClip[] shawarmaAudio;
 	// TomTom
@@ -199,6 +205,51 @@ public class Kami : MonoBehaviour {
 				j++;
 			}
 			boxwormConfigs [i] = config;
+		}
+
+		// OSCILLOOPS
+
+		// Oscilloop audio
+		oscilloopAudio = new AudioClip[11];
+		for (int i = 1; i < 11; i++) {
+			oscilloopAudio[i] = (AudioClip)Resources.Load ("Audio/osci_output" + i);
+		}
+
+		// Oscilloop config
+		oscilloopConfigs = new Oscilloop.OscilloopConfig[11];
+		float[] freqs, amps;
+		float norm_const;
+		for (int i = 1; i < 11; i++) {
+			norm_const = 0;
+			freqs = new float[16];
+			amps = new float[16];
+			Oscilloop.OscilloopConfig config = new Oscilloop.OscilloopConfig();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/osci_output" + i + "_config");
+			var result = Regex.Split(textConfig.text, "\r\n|\r|\n");
+			int j = 0;
+			foreach (string line in result) {
+				if (!string.IsNullOrEmpty(line)) {
+					if (!line.Contains (" ")) {
+						// Normalization constant (first line of file)
+						norm_const = float.Parse (line);
+					}
+					else {
+						// Format: "{freq} {amp}\n"
+						string[] elems = line.Split (' ');
+						freqs[j] = float.Parse (elems[0]);
+						amps[j] = float.Parse (elems[1]);
+						j++;
+					}
+				}
+			}
+			// Apply normalization constant (divisor) to amplitudes
+			for (int k = 0; k < 16; k++) {
+				amps[k] /= norm_const;
+			}
+			config.freqs = freqs;
+			config.amps = amps;
+			config.norm_const = norm_const;
+			oscilloopConfigs[i] = config;
 		}
 
 		// MARACAWS
@@ -408,17 +459,20 @@ public class Kami : MonoBehaviour {
 
 		rotation = new Quaternion (Random.value, Random.value, Random.value, Random.value);
 
-		if (critter.GetType() == hummingloop.GetComponent<Hummingloop>().GetType()) {
+		System.Type critterType = critter.GetType ();
+
+		if (critterType == hummingloop.GetComponent<Hummingloop> ().GetType ()) {
 			// It was a hummingloop
-		}
-		if (critter.GetType () == boxworm.GetComponent<Boxworm>().GetType ()) {
+		} else if (critterType == boxworm.GetComponent<Boxworm> ().GetType ()) {
 			// It was a boxworm
 			// rotation: face towards the center point, but with zero angle of attack to the horizon.
-			rotation = Quaternion.LookRotation((new Vector3(
+			rotation = Quaternion.LookRotation ((new Vector3 (
 				transform.position.x, location.y, transform.position.z) - location));
-		}
-		if (critter.GetType () == maracaw.GetComponent<Maracaws>().GetType ()) {
+		} else if (critterType == maracaw.GetComponent<Maracaws> ().GetType ()) {
 			// It was a maracaw
+		} else if (critterType == oscilloop.GetComponent<Oscilloop> ().GetType ()) {
+			// Set rotation to be upright
+			rotation = Quaternion.Euler (new Vector3(0, 0, 0));
 		}
 
 		t = Instantiate (critter.transform, location, rotation) as Transform;
@@ -541,12 +595,17 @@ public class Kami : MonoBehaviour {
 	public Hummingloop.HummingloopConfig GetHummingloopConfig(int i) {
 		return hummingloopConfigs [i];
 	}
-
 	public AudioClip GetBoxwormAudio(int i) {
 		return boxwormAudio [i];
 	}
 	public Boxworm.BoxwormConfig GetBoxwormConfig(int i) {
 		return boxwormConfigs [i];
+	}
+	public AudioClip GetOscilloopAudio(int i) {
+		return oscilloopAudio [i];
+	}
+	public Oscilloop.OscilloopConfig GetOscilloopConfig(int i) {
+		return oscilloopConfigs [i];
 	}
 	public AudioClip GetMaracawsAudio(int i) {
 		return maracawsAudio [i];

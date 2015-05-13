@@ -24,7 +24,8 @@ public class Maracaws : Critter {
 	private bool dying = false;
 	
 	public override void CritterStart() {
-		// Nothing needed.
+		// Configure radius for grabbing
+		critterRadius = 2.0f;
 	}
 
 	public override AudioClip GetCritterAudio() {
