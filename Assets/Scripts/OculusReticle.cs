@@ -38,7 +38,7 @@ public class OculusReticle : MonoBehaviour {
 			this.transform.position = looker.position + looker.forward * hit.distance;
 		} else {
 			currentTarget = null;
-			this.transform.position = looker.position - looker.forward;
+			this.transform.position = looker.position + looker.forward * 5f;
 		}
 	}
 }
