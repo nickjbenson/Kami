@@ -24,7 +24,8 @@ public class TomTom : Critter {
 	}
 	
 	public override AudioClip GetCritterAudio() {
-		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
+//		int idx = (int) Mathf.Ceil(Random.Range (1, 8));
+		int idx = 1;
 		AudioClip clip = kami.GetTomTomAudio(idx);
 		config = kami.GetTomTomConfig (idx);
 		//TODO: map color to config.pitch

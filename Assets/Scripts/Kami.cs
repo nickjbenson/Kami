@@ -29,7 +29,7 @@ public class Kami : MonoBehaviour {
 	public string createOscilloopKey = "5";
 	public string createShawarmaKey = "6";
 	public string createTomTomKey = "7";
-	public string createClangKey = "8";
+	public string createThunderCloudKey = "8";
 	public string createAngelKey = "9";
 	public string pullKey = "c"; // Key for pulling on critters
 	public string pushKey = "x"; // Key for pushing on critters
@@ -39,9 +39,10 @@ public class Kami : MonoBehaviour {
 	public Transform maracaw; // maracaw prefab
 	public Transform mine; // mine prefab
 	public Transform oscilloop; // oscilloop prefab
+	public Transform shawarma;
 	public Transform tomtom;
-	public Transform clang;
 	public Transform angel;
+	public Transform thundercloud;
 
 	// CRITTER ACTION RADII
 	// No-Go / turnaround radius
@@ -73,15 +74,16 @@ public class Kami : MonoBehaviour {
 	private Oscilloop.OscilloopConfig[] oscilloopConfigs;
 	// Shawarma
 	private AudioClip[] shawarmaAudio;
+	private Critter.SparseConfig[] shawarmaConfigs;
 	// TomTom
 	private AudioClip[] tomtomAudio;
 	private Critter.SparseConfig[] tomtomConfigs;
-	// Clang
-	private AudioClip[] clangAudio;
-	private Critter.SparseConfig[] clangConfigs;
 	// Angel
 	private AudioClip[] angelAudio;
 	private Critter.SparseConfig[] angelConfigs;
+	// ThunderCloud
+	private AudioClip[] thundercloudAudio;
+	private Critter.SparseConfig[] thundercloudConfigs;
 
 	// Oculus Reticle
 	public OculusReticle reticle;
@@ -283,6 +285,33 @@ public class Kami : MonoBehaviour {
 			mineAudio [i] = (AudioClip)Resources.Load ("Audio/mine_output" + i);
 		}
 
+		// SHAWARMA
+		
+		// Shawarma audio
+		shawarmaAudio = new AudioClip[11];
+		for (int i = 1; i <= 10; i++) {
+			shawarmaAudio [i] = (AudioClip)Resources.Load ("Audio/uplift_output" + i);
+		}
+		
+		// Shawarma config
+		shawarmaConfigs = new Critter.SparseConfig[11];
+		for (int i = 1; i <= 10; i++) {
+			Critter.SparseConfig config = new Critter.SparseConfig ();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/uplift_output" + i + "_config");
+			var result = textConfig.text.Trim ().Split (' ');
+			int j = 0;
+			config.hits = new bool[result.Length];
+			foreach (string pitchStr in result) {
+				if (pitchStr.Equals("-1")){
+					config.hits[j] = false;
+				} else {
+					config.hits [j] = true;
+				}
+				j++;
+			}
+			shawarmaConfigs [i] = config;
+		}
+
 		// TOMTOM
 
 		// TomTom audio
@@ -296,7 +325,7 @@ public class Kami : MonoBehaviour {
 		for (int i = 1; i <= 1; i++) {
 			Critter.SparseConfig config = new Critter.SparseConfig ();
 			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/ring_output" + i + "_config");
-			var result = textConfig.text.Split (' ');
+			var result = textConfig.text.Trim ().Split (' ');
 			int j = 0;
 			config.hits = new bool[result.Length];
 			foreach (string pitchStr in result) {
@@ -316,15 +345,15 @@ public class Kami : MonoBehaviour {
 		// Angel audio
 		angelAudio = new AudioClip[11];
 		for (int i = 1; i <= 10; i++) {
-			angelAudio [i] = (AudioClip)Resources.Load ("Audio/uplift_output" + i);
+			angelAudio [i] = (AudioClip)Resources.Load ("Audio/angel_output" + i);
 		}
 		
 		// Angel config
 		angelConfigs = new Critter.SparseConfig[11];
 		for (int i = 1; i <= 10; i++) {
 			Critter.SparseConfig config = new Critter.SparseConfig ();
-			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/uplift_output" + i + "_config");
-			var result = textConfig.text.Split (' ');
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/angel_output" + i + "_config");
+			var result = textConfig.text.Trim ().Split (' ');
 			int j = 0;
 			config.hits = new bool[result.Length];
 			foreach (string pitchStr in result) {
@@ -336,6 +365,33 @@ public class Kami : MonoBehaviour {
 				j++;
 			}
 			angelConfigs [i] = config;
+		}
+
+		// THUNDERCLOUD
+		
+		// Thundercloud audio
+		thundercloudAudio = new AudioClip[6];
+		for (int i = 1; i <= 5; i++) {
+			thundercloudAudio [i] = (AudioClip)Resources.Load ("Audio/thundercloud_output" + i);
+		}
+		
+		// Thundercloud config
+		thundercloudConfigs = new Critter.SparseConfig[11];
+		for (int i = 1; i <= 5; i++) {
+			Critter.SparseConfig config = new Critter.SparseConfig ();
+			TextAsset textConfig = (TextAsset)Resources.Load ("Audio/thundercloud_output" + i + "_config");
+			var result = textConfig.text.Trim ().Split (' ');
+			int j = 0;
+			config.hits = new bool[result.Length];
+			foreach (string pitchStr in result) {
+				if (pitchStr.Equals("-1")){
+					config.hits[j] = false;
+				} else {
+					config.hits [j] = true;
+				}
+				j++;
+			}
+			thundercloudConfigs [i] = config;
 		}
 
 		// ********************
@@ -401,11 +457,14 @@ public class Kami : MonoBehaviour {
 		if (Input.GetKeyDown (createOscilloopKey)) {
 			spawnCritter("oscilloop");
 		}
+		if (Input.GetKeyDown (createShawarmaKey)) {
+			spawnCritter ("shawarma");
+		}
 		if (Input.GetKeyDown (createTomTomKey)) {
 			spawnCritter ("tomtom");
 		}
-		if (Input.GetKeyDown (createClangKey)) {
-			spawnCritter ("clang");
+		if (Input.GetKeyDown (createThunderCloudKey)) {
+			spawnCritter ("thundercloud");
 		}
 		if (Input.GetKeyDown (createAngelKey)) {
 			spawnCritter ("angel");
@@ -516,11 +575,15 @@ public class Kami : MonoBehaviour {
 			type = oscilloop;
 			rotation = Quaternion.Euler (0, 0, 0);
 			location = GetRandomSpawn ();
+		} else if (critterName == "shawarma") {
+			type = shawarma;
+			location = GetRandomSpawn();
 		} else if (critterName == "tomtom") {
 			type = tomtom;
 			location = GetRandomSpawn ();
-		} else if (critterName == "clang") {
-			type = clang;
+		} else if (critterName == "thundercloud") {
+			type = thundercloud;
+			rotation = Quaternion.Euler(0, 0, 0);
 			location = GetRandomSpawn ();
 		} else if (critterName == "angel") {
 			type = angel;
@@ -617,14 +680,14 @@ public class Kami : MonoBehaviour {
 	public AudioClip GetTomTomAudio(int i){
 		return tomtomAudio [i];
 	}
+	public AudioClip GetShawarmaAudio(int i){
+		return shawarmaAudio [i];
+	}
+	public Critter.SparseConfig GetShawarmaConfig(int i){
+		return shawarmaConfigs [i];
+	}
 	public Critter.SparseConfig GetTomTomConfig(int i){
 		return tomtomConfigs [i];
-	}
-	public AudioClip GetClangAudio(int i){
-		return clangAudio [i];
-	}
-	public Critter.SparseConfig GetClangConfig(int i){
-		return clangConfigs [i];
 	}
 	public AudioClip GetAngelAudio(int i){
 		return angelAudio [i];
@@ -632,5 +695,10 @@ public class Kami : MonoBehaviour {
 	public Critter.SparseConfig GetAngelConfig(int i){
 		return angelConfigs [i];
 	}
-	
+	public AudioClip GetThunderCloudAudio(int i){
+		return thundercloudAudio [i];
+	}
+	public Critter.SparseConfig GetThunderCloudConfig(int i){
+		return thundercloudConfigs [i];
+	}	
 }

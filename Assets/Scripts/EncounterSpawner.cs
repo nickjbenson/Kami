@@ -177,6 +177,10 @@ public class EncounterSpawner : MonoBehaviour {
 						  new int[] {1, 1, 2, 1},
 						  SpawnType.DISTANCE);
 		purpleSpringSpawns.Add (tempS);
+		// 1 tomtom - we only have 1 audio file for it anyway
+		tempS = new Spawn (this, new Critter[] {kami.tomtom.GetComponent<Critter> ()}, 
+		new int[] {1, 1}, SpawnType.TREETOPS);
+		purpleSpringSpawns.Add (tempS);
 
 		// Finalize Purple Spring spawns
 		paletteDict.Add ("purple spring", purpleSpringSpawns);
@@ -214,6 +218,18 @@ public class EncounterSpawner : MonoBehaviour {
 		                  new Critter[] {kami.boxworm.GetComponent<Critter>()},
 		new int[] {1, 1, 2, 3, 3, 2, 4, 1},
 		SpawnType.DISTANCE);
+		dazzleNightSpawns.Add (tempS);
+		// a few (1-2) shawarma close by
+		tempS = new Spawn (this,
+		                  new Critter[] {kami.shawarma.GetComponent<Critter> ()},
+		new int[] {1, 1, 2, 1},
+		SpawnType.HILLS);
+		dazzleNightSpawns.Add (tempS);
+		// a few (3-5) angels
+		tempS = new Spawn (this,
+		                   new Critter[] {kami.angel.GetComponent<Critter> ()},
+		new int[] {3, 2, 4, 1, 5, 1},
+		SpawnType.HILLS);
 		dazzleNightSpawns.Add (tempS);
 
 		// Finalize Dazzle Night spawns

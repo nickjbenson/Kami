@@ -24,7 +24,7 @@ public class Angel : Critter {
 	}
 	
 	public override AudioClip GetCritterAudio() {
-		int idx = (int) Mathf.Ceil(Random.Range (1, 11));
+		int idx = (int) Mathf.Ceil(Random.Range (1, 10));
 		AudioClip clip = kami.GetAngelAudio(idx);
 		config = kami.GetAngelConfig (idx);
 		return clip;
