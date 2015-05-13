@@ -328,7 +328,21 @@ public class EncounterSpawner : MonoBehaviour {
 
 					// Measure.
 					OnMeasure();
+
+					if (measureCount % 4 == 0) {
+						// Palette change (every 4 measures)
+						// Pick a random palette
+						System.Random rand = new System.Random();
+						int size = paletteDict.Count;
+						int randomIndex = rand.Next(size);
+						List<string> keys = new List<string>(paletteDict.Keys);
+
+						paletteChanger.ChangePalette(keys[randomIndex]);
+					}
+
 				}
+
+
 			}
 		}
 		

@@ -64,7 +64,7 @@ public class PaletteChanger : MonoBehaviour {
 	private Color curBGColor;
 	private bool colorChanging;
 	private float timeSinceChange = 0f;
-	public float paletteChangeSpeed = 1f;
+	public float paletteChangeSpeed = 0.5f;
 	private AnimationCurve ease = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
 	// This is the camera that renders the background color
