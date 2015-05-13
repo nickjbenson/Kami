@@ -4,11 +4,11 @@ using System.Collections;
 public class TomTom : Critter {
 
 	// ANIMATION VARIABLES
-	bool active = false;
+	private bool active = false;
 	public float angularSpeed;
 	private float rotatedSoFar = 0;
 	private Critter.SparseConfig config;
-	private int tomtom_idx = 0;
+	private int tomtom_idx = 5;
 	
 	// MOVEMENT VARIABLES
 	public float speed = 0.01f; // Movement speed towards target
