@@ -34,9 +34,11 @@ public class OculusReticle : MonoBehaviour {
 		layerMask = ~layerMask;
 		if (Physics.Raycast (looker.position, looker.forward, out hit, maxDistance, layerMask)) {
 			currentTarget = hit.transform;
+			print (currentTarget.GetType ());
+			this.transform.position = looker.position + looker.forward * hit.distance;
 		} else {
 			currentTarget = null;
+			this.transform.position = looker.position - looker.forward;
 		}
-		this.transform.position = looker.position + looker.forward * hit.distance;
 	}
 }

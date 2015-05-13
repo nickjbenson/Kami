@@ -10,6 +10,7 @@ public class PaletteChanger : MonoBehaviour {
 	public Material treeTrunkMat;
 	public Material treeFoliageMat;
 	public Material cloudMat;
+	public Material bgMat;
 
 	// WORLD PALETTE MODE
 	public string currentPalette = "purple spring";
@@ -67,10 +68,6 @@ public class PaletteChanger : MonoBehaviour {
 	public float paletteChangeSpeed = 1f;
 	private AnimationCurve ease = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-	// This is the camera that renders the background color
-	public UnityStandardAssets.ImageEffects.EdgeDetection edgeDetectionCamera;
-
-
 	public void Start() {
 
 		// Initialize palette colors.
@@ -89,7 +86,7 @@ public class PaletteChanger : MonoBehaviour {
 		treeTrunkMat.color = curTreeTrunkColor;
 		treeFoliageMat.color = curTreeFoliageColor;
 		cloudMat.color = curCloudColor;
-		edgeDetectionCamera.edgesOnlyBgColor = curBGColor;
+		bgMat.color = curBGColor;
 
 	}
 
@@ -132,7 +129,7 @@ public class PaletteChanger : MonoBehaviour {
 			treeTrunkMat.color = curTreeTrunkColor;
 			treeFoliageMat.color = curTreeFoliageColor;
 			cloudMat.color = curCloudColor;
-			edgeDetectionCamera.edgesOnlyBgColor = curBGColor;
+			bgMat.color = curBGColor;
 
 			// If enough time has passed, disable colorChanging
 			if (t == 1) {

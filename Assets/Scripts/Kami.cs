@@ -382,17 +382,15 @@ public class Kami : MonoBehaviour {
 				leapPull = false;
 			}
 			
-			print ("ForceMagnitude: " + leapControl.ForceMagnitude);
-			print ("HEY! SET THE PUSHPULL FORCE APPROPRIATELY HERE!");
+			//print ("ForceMagnitude: " + leapControl.ForceMagnitude);
+			pushPullForceMultiplier = Mathf.Abs (leapControl.ForceMagnitude);
 		}
 
 		if (Input.GetKeyDown (createHummingloopKey)) {
 			spawnCritter("hummingloop");
-			print ("Spawning Honkyloop");
 		}
 		if (Input.GetKeyDown (createBoxwormKey)) {
 			spawnCritter("boxworm");
-			print ("Spawning Bevelworm");
 		}
 		if (Input.GetKeyDown (createMaracawKey)) {
 			spawnCritter("maracaw");
