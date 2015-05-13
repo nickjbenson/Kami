@@ -56,6 +56,7 @@ class BaseGenerator(object):
         self.synth.cc(channel, control, value)
 
     def set_num_notes_per_beat(self, notesPerBeat):
+        self.notesPerBeat = notesPerBeat
         self.ticksPerNote = int(kTicksPerBeat / notesPerBeat)
 
     # Internal method
@@ -166,7 +167,20 @@ class BaseGenerator(object):
     # Used by Main
     def get_config(self):
         notesToConfig = []
-        for note in self.get_notes_list():
+        # generate sixteenth notes. Our notes list may be in quarter notes, etc.
+        # depending on our notesPerBeat
+        extraNoteRatio = float(kDefaultNumNotesPerBeat) / float(self.notesPerBeat)
+        if extraNoteRatio < 1:
+            print "We don't support so few notes ;("
+        notesList = self.get_notes_list()
+        for i in xrange(0, int(len(notesList) * extraNoteRatio)):
+            relevantIndex = int(i / extraNoteRatio)
+            note = notesList[relevantIndex]
+            if extraNoteRatio > 1:
+                if i % extraNoteRatio != 0:
+                    if note != -1:
+                        notesToConfig.append("0")
+                        continue
             if isinstance(note, list):
                 notesToConfig.append(str(sum(note)))
             else:
