@@ -12,3 +12,7 @@ have been reappropriated for fine-tuned automatic wav file generation.
 
 ## Screenshots
 ![gif preview](Promotional/abc.gif)
+![gif preview](Promotional/aba.gif)
+![gif preview](Promotional/wow.gif)
+![gif preview](Promotional/purple.gif)
+![gif preview](Promotional/distance.gif)
